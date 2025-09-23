@@ -4,10 +4,10 @@
 // Default configuration settings
 const DEFAULT_CONFIG = {
   enabled: true,
-  tabLimit: 10,
+  tabLimit: 5,
   autoClose: true,
   notifications: true,
-  pauseBetweenClosures: 1000 // 1 second pause between tab closures
+  pauseBetweenClosures: 1000, // 1 second pause between tab closures
 };
 
 // Activity log for recent events
@@ -23,14 +23,14 @@ chrome.runtime.onInstalled.addListener(initializeExtension);
  */
 async function initializeExtension() {
   console.log('Tab Monitor: Initializing extension...');
-  
+
   // Load or set default configuration
   const config = await getConfig();
   if (!config.enabled) {
     console.log('Tab Monitor: Extension is disabled');
     return;
   }
-  
+
   // Update badge and start monitoring
   await updateAllWindowBadges();
   addLogEntry('Extension initialized', 'info');
@@ -70,16 +70,16 @@ function addLogEntry(message, type = 'info', windowId = null) {
     timestamp,
     message,
     type,
-    windowId
+    windowId,
   };
-  
+
   activityLog.unshift(entry);
-  
+
   // Keep only the most recent entries
   if (activityLog.length > MAX_LOG_ENTRIES) {
     activityLog = activityLog.slice(0, MAX_LOG_ENTRIES);
   }
-  
+
   console.log(`Tab Monitor [${type}]: ${message}`);
 }
 
@@ -103,18 +103,19 @@ async function getAllWindowTabCounts() {
   try {
     const windows = await chrome.windows.getAll();
     const windowStats = [];
-    
+
     for (const window of windows) {
-      if (window.type === 'normal') { // Only count normal browser windows
+      if (window.type === 'normal') {
+        // Only count normal browser windows
         const tabCount = await getTabCount(window.id);
         windowStats.push({
           windowId: window.id,
           tabCount: tabCount,
-          focused: window.focused
+          focused: window.focused,
         });
       }
     }
-    
+
     return windowStats;
   } catch (error) {
     console.error('Tab Monitor: Error getting window stats:', error);
@@ -130,15 +131,16 @@ async function updateAllWindowBadges() {
     const windowStats = await getAllWindowTabCounts();
     const totalTabs = windowStats.reduce((sum, stat) => sum + stat.tabCount, 0);
     const config = await getConfig();
-    
+
     // Set badge text to show total tabs
     chrome.action.setBadgeText({ text: totalTabs.toString() });
-    
+
     // Set badge color based on whether any window exceeds the limit
-    const hasExcessTabs = windowStats.some(stat => stat.tabCount > config.tabLimit);
+    const hasExcessTabs = windowStats.some(
+      (stat) => stat.tabCount > config.tabLimit,
+    );
     const badgeColor = hasExcessTabs ? '#ff4444' : '#44ff44';
     chrome.action.setBadgeBackgroundColor({ color: badgeColor });
-    
   } catch (error) {
     console.error('Tab Monitor: Error updating badge:', error);
   }
@@ -149,60 +151,69 @@ async function updateAllWindowBadges() {
  */
 async function enforceTabLimit(windowId) {
   const config = await getConfig();
-  
+
   if (!config.enabled || !config.autoClose) {
     return;
   }
-  
+
   try {
     const tabs = await chrome.tabs.query({ windowId: windowId });
     const tabCount = tabs.length;
-    
+
     if (tabCount <= config.tabLimit) {
       return; // Within limit
     }
-    
+
     const excessCount = tabCount - config.tabLimit;
-    addLogEntry(`Window ${windowId} has ${excessCount} excess tabs (${tabCount}/${config.tabLimit})`, 'warning', windowId);
-    
+    addLogEntry(
+      `Window ${windowId} has ${excessCount} excess tabs (${tabCount}/${config.tabLimit})`,
+      'warning',
+      windowId,
+    );
+
     // Show notification if enabled
     if (config.notifications) {
       chrome.notifications.create({
         type: 'basic',
         iconUrl: 'icons/icon48.png',
         title: 'Tab Monitor',
-        message: `Window has ${excessCount} excess tabs. Auto-closing...`
+        message: `Window has ${excessCount} excess tabs. Auto-closing...`,
       });
     }
-    
+
     // Sort tabs by last accessed time (close most recent first, but preserve active and pinned tabs)
     const closableTabs = tabs
-      .filter(tab => !tab.active && !tab.pinned) // Don't close active or pinned tabs
+      .filter((tab) => !tab.active && !tab.pinned) // Don't close active or pinned tabs
       .sort((a, b) => (b.lastAccessed || 0) - (a.lastAccessed || 0)); // Most recent first
-    
+
     // Close excess tabs with pauses between closures
     const tabsToClose = closableTabs.slice(0, excessCount);
-    
+
     for (let i = 0; i < tabsToClose.length; i++) {
       const tab = tabsToClose[i];
-      
+
       try {
         await chrome.tabs.remove(tab.id);
         addLogEntry(`Closed tab: ${tab.title || tab.url}`, 'action', windowId);
-        
+
         // Pause between closures to avoid overwhelming Chrome
         if (i < tabsToClose.length - 1 && config.pauseBetweenClosures > 0) {
-          await new Promise(resolve => setTimeout(resolve, config.pauseBetweenClosures));
+          await new Promise((resolve) =>
+            setTimeout(resolve, config.pauseBetweenClosures),
+          );
         }
       } catch (error) {
         console.error('Tab Monitor: Error closing tab:', error);
-        addLogEntry(`Failed to close tab: ${tab.title || tab.url}`, 'error', windowId);
+        addLogEntry(
+          `Failed to close tab: ${tab.title || tab.url}`,
+          'error',
+          windowId,
+        );
       }
     }
-    
+
     // Update badge after closing tabs
     setTimeout(updateAllWindowBadges, 100);
-    
   } catch (error) {
     console.error('Tab Monitor: Error enforcing tab limit:', error);
     addLogEntry('Error enforcing tab limit', 'error', windowId);
@@ -217,8 +228,12 @@ async function enforceTabLimit(windowId) {
 chrome.tabs.onCreated.addListener(async (tab) => {
   const config = await getConfig();
   if (!config.enabled) return;
-  
-  addLogEntry(`New tab created in window ${tab.windowId}`, 'info', tab.windowId);
+
+  addLogEntry(
+    `New tab created in window ${tab.windowId}`,
+    'info',
+    tab.windowId,
+  );
   await updateAllWindowBadges();
   await enforceTabLimit(tab.windowId);
 });
@@ -229,8 +244,12 @@ chrome.tabs.onCreated.addListener(async (tab) => {
 chrome.tabs.onRemoved.addListener(async (tabId, removeInfo) => {
   const config = await getConfig();
   if (!config.enabled) return;
-  
-  addLogEntry(`Tab removed from window ${removeInfo.windowId}`, 'info', removeInfo.windowId);
+
+  addLogEntry(
+    `Tab removed from window ${removeInfo.windowId}`,
+    'info',
+    removeInfo.windowId,
+  );
   await updateAllWindowBadges();
 });
 
@@ -240,8 +259,12 @@ chrome.tabs.onRemoved.addListener(async (tabId, removeInfo) => {
 chrome.tabs.onAttached.addListener(async (tabId, attachInfo) => {
   const config = await getConfig();
   if (!config.enabled) return;
-  
-  addLogEntry(`Tab attached to window ${attachInfo.newWindowId}`, 'info', attachInfo.newWindowId);
+
+  addLogEntry(
+    `Tab attached to window ${attachInfo.newWindowId}`,
+    'info',
+    attachInfo.newWindowId,
+  );
   await updateAllWindowBadges();
   await enforceTabLimit(attachInfo.newWindowId);
 });
@@ -252,8 +275,12 @@ chrome.tabs.onAttached.addListener(async (tabId, attachInfo) => {
 chrome.tabs.onDetached.addListener(async (tabId, detachInfo) => {
   const config = await getConfig();
   if (!config.enabled) return;
-  
-  addLogEntry(`Tab detached from window ${detachInfo.oldWindowId}`, 'info', detachInfo.oldWindowId);
+
+  addLogEntry(
+    `Tab detached from window ${detachInfo.oldWindowId}`,
+    'info',
+    detachInfo.oldWindowId,
+  );
   await updateAllWindowBadges();
 });
 
@@ -262,10 +289,10 @@ chrome.tabs.onDetached.addListener(async (tabId, detachInfo) => {
  */
 chrome.windows.onFocusChanged.addListener(async (windowId) => {
   if (windowId === chrome.windows.WINDOW_ID_NONE) return;
-  
+
   const config = await getConfig();
   if (!config.enabled) return;
-  
+
   await updateAllWindowBadges();
 });
 
@@ -285,22 +312,22 @@ async function handleMessage(request, sender, sendResponse) {
         const config = await getConfig();
         sendResponse({ success: true, config });
         break;
-        
+
       case 'saveConfig':
         await saveConfig(request.config);
         await updateAllWindowBadges();
         sendResponse({ success: true });
         break;
-        
+
       case 'getWindowStats':
         const windowStats = await getAllWindowTabCounts();
         sendResponse({ success: true, windowStats });
         break;
-        
+
       case 'getActivityLog':
         sendResponse({ success: true, activityLog });
         break;
-        
+
       case 'forceCheck':
         const windows = await chrome.windows.getAll({ type: 'normal' });
         for (const window of windows) {
@@ -310,13 +337,13 @@ async function handleMessage(request, sender, sendResponse) {
         addLogEntry('Manual verification completed', 'action');
         sendResponse({ success: true });
         break;
-        
+
       case 'clearLog':
         activityLog = [];
         addLogEntry('Activity log cleared', 'action');
         sendResponse({ success: true });
         break;
-        
+
       default:
         sendResponse({ success: false, error: 'Unknown action' });
     }

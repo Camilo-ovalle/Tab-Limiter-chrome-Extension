@@ -3,19 +3,19 @@
 /* CSS Variables for consistent theming */
 :root {
   /* Colores principales */
-  --color-primary-dark: #002C5F;   /* Azul oscuro - encabezados, fondo */
-  --color-primary: #0057A0;        /* Azul medio - botones, enlaces */
-  --color-accent: #00AEEF;         /* Azul claro - íconos, acentos */
+  --color-primary-dark: #002c5f; /* Azul oscuro - encabezados, fondo */
+  --color-primary: #0057a0; /* Azul medio - botones, enlaces */
+  --color-accent: #00aeef; /* Azul claro - íconos, acentos */
 
   /* Colores neutros */
-  --color-white: #FFFFFF;          /* Fondo general, texto sobre oscuro */
-  --color-light-gray: #F5F5F5;     /* Secciones, fondo suave */
-  --color-gray: #CCCCCC;           /* Bordes, texto secundario */
-  --color-black: #000000;          /* Texto principal */
+  --color-white: #ffffff; /* Fondo general, texto sobre oscuro */
+  --color-light-gray: #f5f5f5; /* Secciones, fondo suave */
+  --color-gray: #cccccc; /* Bordes, texto secundario */
+  --color-black: #000000; /* Texto principal */
 
   /* Extras opcionales */
-  --color-hover: #004080;          /* Hover para botones/enlaces */
-  --color-border: #E0E0E0;         /* Líneas divisorias sutiles */
+  --color-hover: #004080; /* Hover para botones/enlaces */
+  --color-border: #e0e0e0; /* Líneas divisorias sutiles */
 
   /* Mapeo de colores existentes a la nueva paleta */
   --primary-color: var(--color-primary);
@@ -24,13 +24,14 @@
   --warning-color: #fbbc04;
   --error-color: #ea4335;
   --text-primary: var(--color-black);
-  --text-secondary: #666666;       /* Más oscuro para mejor legibilidad */
-  --text-muted: #888888;          /* Más oscuro para mejor legibilidad */
+  --text-secondary: #666666; /* Más oscuro para mejor legibilidad */
+  --text-muted: #888888;
+  --text-contrasted: #333333; /* Más oscuro para mejor legibilidad */
   --background: var(--color-white);
   --surface: var(--color-light-gray);
   --border: var(--color-border);
   --border-hover: var(--color-gray);
-  
+
   /* Spacing */
   --spacing-xs: 4px;
   --spacing-sm: 8px;
@@ -38,17 +39,17 @@
   --spacing-lg: 16px;
   --spacing-xl: 20px;
   --spacing-xxl: 24px;
-  
+
   /* Border radius */
   --radius-sm: 4px;
   --radius-md: 8px;
   --radius-lg: 12px;
-  
+
   /* Shadows */
   --shadow-sm: 0 1px 2px rgba(60, 64, 67, 0.1);
   --shadow-md: 0 2px 4px rgba(60, 64, 67, 0.15);
   --shadow-lg: 0 4px 8px rgba(60, 64, 67, 0.2);
-  
+
   /* Transitions */
   --transition-fast: 0.15s ease-out;
   --transition-normal: 0.25s ease-out;
@@ -63,7 +64,8 @@
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+    'Helvetica Neue', sans-serif;
   font-size: 14px;
   line-height: 1.5;
   color: var(--text-primary);
@@ -105,7 +107,11 @@ body {
   align-items: center;
   justify-content: space-between;
   padding: var(--spacing-lg);
-  background: linear-gradient(135deg, var(--color-primary-dark) 0%, var(--color-primary) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--color-primary-dark) 0%,
+    var(--color-primary) 100%
+  );
   color: var(--color-white);
   box-shadow: var(--shadow-md);
 }
@@ -143,11 +149,12 @@ body {
 }
 
 @keyframes pulse {
-  0%, 100% { 
+  0%,
+  100% {
     transform: scale(1);
     opacity: 1;
   }
-  50% { 
+  50% {
     transform: scale(1.1);
     opacity: 0.8;
   }
@@ -182,7 +189,7 @@ body {
 
 .slider:before {
   position: absolute;
-  content: "";
+  content: '';
   height: 18px;
   width: 18px;
   left: 2px;
@@ -215,7 +222,7 @@ section h2 {
   font-size: 16px;
   font-weight: 600;
   margin-bottom: var(--spacing-md);
-  color: var(--text-primary);
+  color: var(--text-contrasted);
 }
 
 /* Statistics section */
@@ -277,13 +284,21 @@ section h2 {
   border-bottom: 1px solid var(--border);
 }
 
+/* Standard checkbox styling */
+.config-item input[type='checkbox']:not(.switch input) {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: var(--primary-color);
+}
+
 .config-item:last-child {
   border-bottom: none;
 }
 
 .config-item label {
   font-weight: 500;
-  color: var(--text-primary);
+  color: var(--text-contrasted);
   flex: 1;
 }
 
@@ -293,7 +308,7 @@ section h2 {
   gap: var(--spacing-xs);
 }
 
-.config-item input[type="number"] {
+.config-item input[type='number'] {
   width: 80px;
   padding: var(--spacing-sm);
   border: 1px solid var(--border);
@@ -302,13 +317,13 @@ section h2 {
   transition: all var(--transition-fast);
 }
 
-.config-item input[type="number"]:focus {
+.config-item input[type='number']:focus {
   outline: none;
   border-color: var(--color-primary);
   box-shadow: 0 0 0 2px rgba(0, 87, 160, 0.2);
 }
 
-.config-item input[type="number"]:disabled {
+.config-item input[type='number']:disabled {
   background: var(--surface);
   color: var(--text-muted);
   cursor: not-allowed;
@@ -565,7 +580,11 @@ section h2 {
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-hover) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--primary-color) 0%,
+    var(--primary-hover) 100%
+  );
   color: white;
   box-shadow: var(--shadow-sm);
 }
@@ -624,8 +643,12 @@ section h2 {
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 .loading-text {
@@ -707,19 +730,19 @@ section h2 {
   .container {
     min-width: 320px;
   }
-  
+
   .stats-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .actions {
     grid-template-columns: 1fr;
   }
-  
+
   .header {
     padding: var(--spacing-md);
   }
-  
+
   section {
     padding: var(--spacing-md);
   }
@@ -736,12 +759,15 @@ section h2 {
     --border: #3c4043;
     --border-hover: #5f6368;
   }
-  
-  .stat-card, .window-item, .activity-log, .btn-secondary {
+
+  .stat-card,
+  .window-item,
+  .activity-log,
+  .btn-secondary {
     background: var(--surface);
     border-color: var(--border);
   }
-  
+
   .notification {
     background: var(--surface);
   }
@@ -754,7 +780,7 @@ section h2 {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
-  
+
   .status-indicator.status-active {
     animation: none;
   }
