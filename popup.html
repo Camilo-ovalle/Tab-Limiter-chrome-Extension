@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chrome Tab Monitor</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!-- Main container for the popup interface -->
+  <div class="container">
+    
+    <!-- Header section with title and main toggle -->
+    <header class="header">
+      <div class="title">
+        <h1>Tab Monitor</h1>
+        <div class="status-indicator" id="statusIndicator"></div>
+      </div>
+      <div class="main-toggle">
+        <label class="switch">
+          <input type="checkbox" id="enabledToggle">
+          <span class="slider"></span>
+        </label>
+      </div>
+    </header>
+
+    <!-- Real-time statistics section -->
+    <section class="stats-section">
+      <h2>Current Statistics</h2>
+      <div class="stats-grid" id="statsGrid">
+        <!-- Dynamic content will be inserted here -->
+      </div>
+    </section>
+
+    <!-- Configuration section -->
+    <section class="config-section">
+      <h2>Configuration</h2>
+      
+      <!-- Tab limit setting -->
+      <div class="config-item">
+        <label for="tabLimit">Tab Limit per Window:</label>
+        <div class="input-group">
+          <input type="number" id="tabLimit" min="1" max="100" value="10">
+          <span class="input-suffix">tabs</span>
+        </div>
+      </div>
+
+      <!-- Auto-close toggle -->
+      <div class="config-item">
+        <label for="autoCloseToggle">Auto-close excess tabs:</label>
+        <label class="switch">
+          <input type="checkbox" id="autoCloseToggle">
+          <span class="slider"></span>
+        </label>
+      </div>
+
+      <!-- Notifications toggle -->
+      <div class="config-item">
+        <label for="notificationsToggle">Show notifications:</label>
+        <label class="switch">
+          <input type="checkbox" id="notificationsToggle">
+          <span class="slider"></span>
+        </label>
+      </div>
+
+      <!-- Pause between closures -->
+      <div class="config-item">
+        <label for="pauseBetweenClosures">Pause between closures:</label>
+        <div class="input-group">
+          <input type="number" id="pauseBetweenClosures" min="0" max="5000" step="100" value="1000">
+          <span class="input-suffix">ms</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Windows list section -->
+    <section class="windows-section">
+      <h2>Window Overview</h2>
+      <div class="windows-list" id="windowsList">
+        <!-- Dynamic content will be inserted here -->
+      </div>
+    </section>
+
+    <!-- Activity log section -->
+    <section class="activity-section">
+      <div class="section-header">
+        <h2>Recent Activity</h2>
+        <button class="clear-btn" id="clearLogBtn">Clear</button>
+      </div>
+      <div class="activity-log" id="activityLog">
+        <!-- Dynamic content will be inserted here -->
+      </div>
+    </section>
+
+    <!-- Action buttons -->
+    <footer class="actions">
+      <button class="btn btn-primary" id="saveConfigBtn">
+        <span class="btn-text">Save Configuration</span>
+        <span class="btn-loading" style="display: none;">Saving...</span>
+      </button>
+      <button class="btn btn-secondary" id="forceCheckBtn">
+        <span class="btn-text">Force Verification</span>
+        <span class="btn-loading" style="display: none;">Checking...</span>
+      </button>
+    </footer>
+
+    <!-- Loading overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+      <div class="loading-spinner"></div>
+      <div class="loading-text">Loading...</div>
+    </div>
+
+    <!-- Success/Error notifications -->
+    <div class="notification" id="notification">
+      <div class="notification-content">
+        <span class="notification-icon"></span>
+        <span class="notification-message"></span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- JavaScript for popup functionality -->
+  <script src="popup.js"></script>
+</body>
+</html>

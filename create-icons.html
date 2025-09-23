@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tab Monitor - Icon Generator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .icon-preview {
+            display: inline-block;
+            margin: 10px;
+            text-align: center;
+            background: white;
+            padding: 10px;
+            border-radius: 4px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .icon-canvas {
+            border: 1px solid #ddd;
+        }
+        .instructions {
+            background: #e7f3ff;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            border-left: 4px solid #4285f4;
+        }
+        button {
+            background: #4285f4;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #3367d6;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Tab Monitor Extension - Icon Generator</h1>
+        
+        <div class="instructions">
+            <h3>Instructions:</h3>
+            <p>1. Click "Generate Icons" to create the extension icons</p>
+            <p>2. Right-click each icon and "Save image as..." to download</p>
+            <p>3. Save them in the icons folder as: icon16.png, icon32.png, icon48.png, icon128.png</p>
+        </div>
+
+        <button onclick="generateIcons()">Generate Icons</button>
+        <button onclick="downloadAll()">Download All</button>
+
+        <div id="iconContainer">
+            <div class="icon-preview">
+                <canvas id="icon16" width="16" height="16" class="icon-canvas"></canvas>
+                <br><small>16x16</small>
+            </div>
+            <div class="icon-preview">
+                <canvas id="icon32" width="32" height="32" class="icon-canvas"></canvas>
+                <br><small>32x32</small>
+            </div>
+            <div class="icon-preview">
+                <canvas id="icon48" width="48" height="48" class="icon-canvas"></canvas>
+                <br><small>48x48</small>
+            </div>
+            <div class="icon-preview">
+                <canvas id="icon128" width="128" height="128" class="icon-canvas"></canvas>
+                <br><small>128x128</small>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function drawIcon(canvas, size) {
+            const ctx = canvas.getContext('2d');
+            const scale = size / 128; // Scale factor based on 128px base size
+            
+            // Clear canvas
+            ctx.clearRect(0, 0, size, size);
+            
+            // Background gradient
+            const bgGradient = ctx.createLinearGradient(0, 0, size, size);
+            bgGradient.addColorStop(0, '#4285f4');
+            bgGradient.addColorStop(1, '#3367d6');
+            
+            // Draw background circle
+            ctx.beginPath();
+            ctx.arc(size/2, size/2, (size/2) - (2 * scale), 0, 2 * Math.PI);
+            ctx.fillStyle = bgGradient;
+            ctx.fill();
+            ctx.strokeStyle = '#1a73e8';
+            ctx.lineWidth = 2 * scale;
+            ctx.stroke();
+            
+            // Draw browser window
+            const windowX = 24 * scale;
+            const windowY = 32 * scale;
+            const windowW = 80 * scale;
+            const windowH = 64 * scale;
+            
+            // Window background
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(windowX, windowY, windowW, windowH);
+            ctx.strokeStyle = '#5f6368';
+            ctx.lineWidth = 1.5 * scale;
+            ctx.strokeRect(windowX, windowY, windowW, windowH);
+            
+            // Title bar
+            ctx.fillStyle = '#f8f9fa';
+            ctx.fillRect(windowX, windowY, windowW, 16 * scale);
+            
+            // Window controls (if size is large enough)
+            if (size >= 32) {
+                const controlY = windowY + (8 * scale);
+                const controlRadius = 2 * scale;
+                
+                // Red button
+                ctx.beginPath();
+                ctx.arc(windowX + (8 * scale), controlY, controlRadius, 0, 2 * Math.PI);
+                ctx.fillStyle = '#ea4335';
+                ctx.fill();
+                
+                // Yellow button
+                ctx.beginPath();
+                ctx.arc(windowX + (16 * scale), controlY, controlRadius, 0, 2 * Math.PI);
+                ctx.fillStyle = '#fbbc04';
+                ctx.fill();
+                
+                // Green button
+                ctx.beginPath();
+                ctx.arc(windowX + (24 * scale), controlY, controlRadius, 0, 2 * Math.PI);
+                ctx.fillStyle = '#34a853';
+                ctx.fill();
+            }
+            
+            // Draw tabs
+            const tabY = windowY + (24 * scale);
+            const tabW = 18 * scale;
+            const tabH = 12 * scale;
+            
+            // Tab 1 (active)
+            ctx.fillStyle = 'rgba(66, 133, 244, 0.8)';
+            ctx.fillRect(windowX + (8 * scale), tabY, tabW, tabH);
+            
+            // Tab 2
+            ctx.fillStyle = 'rgba(66, 133, 244, 0.6)';
+            ctx.fillRect(windowX + (30 * scale), tabY, tabW, tabH);
+            
+            // Tab 3
+            ctx.fillStyle = 'rgba(66, 133, 244, 0.4)';
+            ctx.fillRect(windowX + (52 * scale), tabY, tabW, tabH);
+            
+            // Monitor indicator (if size is large enough)
+            if (size >= 48) {
+                const indicatorX = windowX + windowW - (8 * scale);
+                const indicatorY = windowY + (12 * scale);
+                const indicatorRadius = 6 * scale;
+                
+                // Circle background
+                ctx.beginPath();
+                ctx.arc(indicatorX, indicatorY, indicatorRadius, 0, 2 * Math.PI);
+                ctx.fillStyle = '#34a853';
+                ctx.fill();
+                ctx.strokeStyle = '#ffffff';
+                ctx.lineWidth = 1 * scale;
+                ctx.stroke();
+                
+                // Counter text (if size is large enough)
+                if (size >= 48) {
+                    ctx.fillStyle = '#ffffff';
+                    ctx.font = `${Math.max(8 * scale, 6)}px Arial`;
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText('3', indicatorX, indicatorY);
+                }
+            }
+        }
+
+        function generateIcons() {
+            const sizes = [16, 32, 48, 128];
+            sizes.forEach(size => {
+                const canvas = document.getElementById(`icon${size}`);
+                drawIcon(canvas, size);
+            });
+        }
+
+        function downloadCanvas(canvas, filename) {
+            const link = document.createElement('a');
+            link.download = filename;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        }
+
+        function downloadAll() {
+            const sizes = [16, 32, 48, 128];
+            sizes.forEach(size => {
+                const canvas = document.getElementById(`icon${size}`);
+                downloadCanvas(canvas, `icon${size}.png`);
+            });
+        }
+
+        // Generate icons on page load
+        window.onload = generateIcons;
+    </script>
+</body>
+</html>
