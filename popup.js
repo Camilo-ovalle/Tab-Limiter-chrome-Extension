@@ -48,9 +48,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 function cacheElements() {
   elements.enabledToggle = document.getElementById('enabledToggle');
   elements.tabLimit = document.getElementById('tabLimit');
+  elements.windowLimit = document.getElementById('windowLimit');
   elements.autoCloseToggle = document.getElementById('autoCloseToggle');
+  elements.autoCloseWindowsToggle = document.getElementById('autoCloseWindowsToggle');
   elements.notificationsToggle = document.getElementById('notificationsToggle');
   elements.pauseBetweenClosures = document.getElementById('pauseBetweenClosures');
+  elements.windowGracePeriod = document.getElementById('windowGracePeriod');
   elements.statusIndicator = document.getElementById('statusIndicator');
   elements.statsGrid = document.getElementById('statsGrid');
   elements.windowsList = document.getElementById('windowsList');
@@ -69,9 +72,12 @@ function setupEventListeners() {
   // Configuration change listeners
   elements.enabledToggle.addEventListener('change', onEnabledToggleChange);
   elements.tabLimit.addEventListener('input', debounce(onConfigChange, 300));
+  elements.windowLimit.addEventListener('input', debounce(onConfigChange, 300));
   elements.autoCloseToggle.addEventListener('change', onConfigChange);
+  elements.autoCloseWindowsToggle.addEventListener('change', onConfigChange);
   elements.notificationsToggle.addEventListener('change', onConfigChange);
   elements.pauseBetweenClosures.addEventListener('input', debounce(onConfigChange, 300));
+  elements.windowGracePeriod.addEventListener('input', debounce(onConfigChange, 300));
   
   // Button listeners
   elements.saveConfigBtn.addEventListener('click', onSaveConfig);
@@ -107,16 +113,22 @@ async function loadConfiguration() {
 function updateConfigUI() {
   elements.enabledToggle.checked = currentConfig.enabled;
   elements.tabLimit.value = currentConfig.tabLimit;
+  elements.windowLimit.value = currentConfig.windowLimit;
   elements.autoCloseToggle.checked = currentConfig.autoClose;
+  elements.autoCloseWindowsToggle.checked = currentConfig.autoCloseWindows;
   elements.notificationsToggle.checked = currentConfig.notifications;
   elements.pauseBetweenClosures.value = currentConfig.pauseBetweenClosures;
+  elements.windowGracePeriod.value = currentConfig.windowGracePeriod;
   
   // Enable/disable controls based on enabled state
   const isEnabled = currentConfig.enabled;
   elements.tabLimit.disabled = !isEnabled;
+  elements.windowLimit.disabled = !isEnabled;
   elements.autoCloseToggle.disabled = !isEnabled;
-  elements.notificationsToggle.disabled = !isEnabled || !currentConfig.autoClose;
-  elements.pauseBetweenClosures.disabled = !isEnabled || !currentConfig.autoClose;
+  elements.autoCloseWindowsToggle.disabled = !isEnabled;
+  elements.notificationsToggle.disabled = !isEnabled || (!currentConfig.autoClose && !currentConfig.autoCloseWindows);
+  elements.pauseBetweenClosures.disabled = !isEnabled || (!currentConfig.autoClose && !currentConfig.autoCloseWindows);
+  elements.windowGracePeriod.disabled = !isEnabled || !currentConfig.autoCloseWindows;
 }
 
 /**
@@ -161,21 +173,22 @@ async function updateStatistics() {
     const windowStats = response.windowStats;
     const totalTabs = windowStats.reduce((sum, stat) => sum + stat.tabCount, 0);
     const totalWindows = windowStats.length;
-    const excessWindows = windowStats.filter(stat => stat.tabCount > currentConfig.tabLimit).length;
+    const excessTabWindows = windowStats.filter(stat => stat.tabCount > currentConfig.tabLimit).length;
     const averageTabs = totalWindows > 0 ? Math.round(totalTabs / totalWindows) : 0;
-    
+    const isOverWindowLimit = totalWindows > currentConfig.windowLimit;
+
     const statsHTML = `
       <div class="stat-card">
         <div class="stat-value">${totalTabs}</div>
         <div class="stat-label">Total Tabs</div>
       </div>
-      <div class="stat-card">
-        <div class="stat-value">${totalWindows}</div>
+      <div class="stat-card ${isOverWindowLimit ? 'stat-warning' : ''}">
+        <div class="stat-value">${totalWindows}/${currentConfig.windowLimit}</div>
         <div class="stat-label">Windows</div>
       </div>
-      <div class="stat-card ${excessWindows > 0 ? 'stat-warning' : ''}">
-        <div class="stat-value">${excessWindows}</div>
-        <div class="stat-label">Over Limit</div>
+      <div class="stat-card ${excessTabWindows > 0 ? 'stat-warning' : ''}">
+        <div class="stat-value">${excessTabWindows}</div>
+        <div class="stat-label">Over Tab Limit</div>
       </div>
       <div class="stat-card">
         <div class="stat-value">${averageTabs}</div>
@@ -324,13 +337,17 @@ async function onEnabledToggleChange() {
 function onConfigChange() {
   // Update current configuration with UI values
   currentConfig.tabLimit = parseInt(elements.tabLimit.value) || 10;
+  currentConfig.windowLimit = parseInt(elements.windowLimit.value) || 3;
   currentConfig.autoClose = elements.autoCloseToggle.checked;
+  currentConfig.autoCloseWindows = elements.autoCloseWindowsToggle.checked;
   currentConfig.notifications = elements.notificationsToggle.checked;
   currentConfig.pauseBetweenClosures = parseInt(elements.pauseBetweenClosures.value) || 1000;
-  
+  currentConfig.windowGracePeriod = parseInt(elements.windowGracePeriod.value) || 10000;
+
   // Update dependent UI elements
-  elements.notificationsToggle.disabled = !currentConfig.enabled || !currentConfig.autoClose;
-  elements.pauseBetweenClosures.disabled = !currentConfig.enabled || !currentConfig.autoClose;
+  elements.notificationsToggle.disabled = !currentConfig.enabled || (!currentConfig.autoClose && !currentConfig.autoCloseWindows);
+  elements.pauseBetweenClosures.disabled = !currentConfig.enabled || (!currentConfig.autoClose && !currentConfig.autoCloseWindows);
+  elements.windowGracePeriod.disabled = !currentConfig.enabled || !currentConfig.autoCloseWindows;
 }
 
 /**

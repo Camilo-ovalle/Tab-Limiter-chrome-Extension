@@ -45,10 +45,25 @@
         </div>
       </div>
 
+      <!-- Window limit setting -->
+      <div class="config-item">
+        <label for="windowLimit">Maximum Windows:</label>
+        <div class="input-group">
+          <input type="number" id="windowLimit" min="1" max="20" value="3">
+          <span class="input-suffix">windows</span>
+        </div>
+      </div>
+
       <!-- Auto-close toggle -->
       <div class="config-item">
         <label for="autoCloseToggle">Auto-close excess tabs:</label>
         <input type="checkbox" id="autoCloseToggle">
+      </div>
+
+      <!-- Auto-close windows toggle -->
+      <div class="config-item">
+        <label for="autoCloseWindowsToggle">Auto-close excess windows:</label>
+        <input type="checkbox" id="autoCloseWindowsToggle">
       </div>
 
       <!-- Notifications toggle -->
@@ -62,6 +77,15 @@
         <label for="pauseBetweenClosures">Pause between closures:</label>
         <div class="input-group">
           <input type="number" id="pauseBetweenClosures" min="0" max="5000" step="100" value="1000">
+          <span class="input-suffix">ms</span>
+        </div>
+      </div>
+
+      <!-- Window grace period -->
+      <div class="config-item">
+        <label for="windowGracePeriod">New window grace period:</label>
+        <div class="input-group">
+          <input type="number" id="windowGracePeriod" min="0" max="60000" step="1000" value="10000">
           <span class="input-suffix">ms</span>
         </div>
       </div>
