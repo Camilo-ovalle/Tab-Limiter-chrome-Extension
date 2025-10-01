@@ -798,3 +798,8 @@ input:focus,
   outline: 2px solid var(--color-accent);
   outline-offset: 1px;
 }
+
+/* Hidden class for admin-only elements */
+.hidden {
+  display: none !important;
+}

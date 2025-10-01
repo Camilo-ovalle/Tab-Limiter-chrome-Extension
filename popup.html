@@ -16,7 +16,7 @@
         <h1>Tab Monitor</h1>
         <div class="status-indicator" id="statusIndicator"></div>
       </div>
-      <div class="main-toggle">
+      <div class="main-toggle admin-only">
         <label class="switch">
           <input type="checkbox" id="enabledToggle">
           <span class="slider"></span>
@@ -32,10 +32,10 @@
       </div>
     </section>
 
-    <!-- Configuration section -->
-    <section class="config-section">
+    <!-- Configuration section (admin only) -->
+    <section class="config-section admin-only">
       <h2>Configuration</h2>
-      
+
       <!-- Tab limit setting -->
       <div class="config-item">
         <label for="tabLimit">Tab Limit per Window:</label>
@@ -99,8 +99,8 @@
       </div>
     </section>
 
-    <!-- Activity log section -->
-    <section class="activity-section">
+    <!-- Activity log section (admin only) -->
+    <section class="activity-section admin-only">
       <div class="section-header">
         <h2>Recent Activity</h2>
         <button class="clear-btn" id="clearLogBtn">Clear</button>
@@ -112,7 +112,7 @@
 
     <!-- Action buttons -->
     <footer class="actions">
-      <button class="btn btn-primary" id="saveConfigBtn">
+      <button class="btn btn-primary admin-only" id="saveConfigBtn">
         <span class="btn-text">Save Configuration</span>
         <span class="btn-loading" style="display: none;">Saving...</span>
       </button>

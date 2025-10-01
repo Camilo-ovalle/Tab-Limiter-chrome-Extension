@@ -14,27 +14,26 @@ const elements = {};
  */
 document.addEventListener('DOMContentLoaded', async () => {
   console.log('Tab Monitor Popup: Initializing...');
-  
+
   // Cache DOM elements
   cacheElements();
-  
+
   // Set up event listeners
   setupEventListeners();
-  
+
   // Show loading overlay
   showLoading(true);
-  
+
   try {
     // Load initial data
     await loadConfiguration();
     await updateDisplay();
-    
+
     // Start real-time updates
     startRealTimeUpdates();
-    
+
     // Hide loading overlay
     showLoading(false);
-    
   } catch (error) {
     console.error('Tab Monitor Popup: Initialization error:', error);
     showNotification('Failed to initialize extension', 'error');
@@ -50,9 +49,13 @@ function cacheElements() {
   elements.tabLimit = document.getElementById('tabLimit');
   elements.windowLimit = document.getElementById('windowLimit');
   elements.autoCloseToggle = document.getElementById('autoCloseToggle');
-  elements.autoCloseWindowsToggle = document.getElementById('autoCloseWindowsToggle');
+  elements.autoCloseWindowsToggle = document.getElementById(
+    'autoCloseWindowsToggle',
+  );
   elements.notificationsToggle = document.getElementById('notificationsToggle');
-  elements.pauseBetweenClosures = document.getElementById('pauseBetweenClosures');
+  elements.pauseBetweenClosures = document.getElementById(
+    'pauseBetweenClosures',
+  );
   elements.windowGracePeriod = document.getElementById('windowGracePeriod');
   elements.statusIndicator = document.getElementById('statusIndicator');
   elements.statsGrid = document.getElementById('statsGrid');
@@ -76,14 +79,20 @@ function setupEventListeners() {
   elements.autoCloseToggle.addEventListener('change', onConfigChange);
   elements.autoCloseWindowsToggle.addEventListener('change', onConfigChange);
   elements.notificationsToggle.addEventListener('change', onConfigChange);
-  elements.pauseBetweenClosures.addEventListener('input', debounce(onConfigChange, 300));
-  elements.windowGracePeriod.addEventListener('input', debounce(onConfigChange, 300));
-  
+  elements.pauseBetweenClosures.addEventListener(
+    'input',
+    debounce(onConfigChange, 300),
+  );
+  elements.windowGracePeriod.addEventListener(
+    'input',
+    debounce(onConfigChange, 300),
+  );
+
   // Button listeners
   elements.saveConfigBtn.addEventListener('click', onSaveConfig);
   elements.forceCheckBtn.addEventListener('click', onForceCheck);
   elements.clearLogBtn.addEventListener('click', onClearLog);
-  
+
   // Cleanup on window unload
   window.addEventListener('beforeunload', cleanup);
 }
@@ -118,17 +127,33 @@ function updateConfigUI() {
   elements.autoCloseWindowsToggle.checked = currentConfig.autoCloseWindows;
   elements.notificationsToggle.checked = currentConfig.notifications;
   elements.pauseBetweenClosures.value = currentConfig.pauseBetweenClosures;
-  elements.windowGracePeriod.value = currentConfig.windowGracePeriod;
-  
+
   // Enable/disable controls based on enabled state
   const isEnabled = currentConfig.enabled;
   elements.tabLimit.disabled = !isEnabled;
   elements.windowLimit.disabled = !isEnabled;
   elements.autoCloseToggle.disabled = !isEnabled;
-  elements.autoCloseWindowsToggle.disabled = !isEnabled;
-  elements.notificationsToggle.disabled = !isEnabled || (!currentConfig.autoClose && !currentConfig.autoCloseWindows);
-  elements.pauseBetweenClosures.disabled = !isEnabled || (!currentConfig.autoClose && !currentConfig.autoCloseWindows);
-  elements.windowGracePeriod.disabled = !isEnabled || !currentConfig.autoCloseWindows;
+  elements.notificationsToggle.disabled =
+    !isEnabled || !currentConfig.autoClose;
+  elements.pauseBetweenClosures.disabled =
+    !isEnabled || !currentConfig.autoClose;
+
+  // Show/hide admin sections based on adminRole
+  toggleAdminSections(currentConfig.adminRole);
+}
+
+/**
+ * Toggle visibility of admin-only sections
+ */
+function toggleAdminSections(isAdmin) {
+  const adminElements = document.querySelectorAll('.admin-only');
+  adminElements.forEach((element) => {
+    if (isAdmin) {
+      element.classList.remove('hidden');
+    } else {
+      element.classList.add('hidden');
+    }
+  });
 }
 
 /**
@@ -136,7 +161,7 @@ function updateConfigUI() {
  */
 function updateStatusIndicator() {
   const indicator = elements.statusIndicator;
-  
+
   if (currentConfig.enabled) {
     indicator.className = 'status-indicator status-active';
     indicator.title = 'Tab monitoring is active';
@@ -155,7 +180,7 @@ async function updateDisplay() {
     await Promise.all([
       updateStatistics(),
       updateWindowsList(),
-      updateActivityLog()
+      updateActivityLog(),
     ]);
   } catch (error) {
     console.error('Tab Monitor Popup: Error updating display:', error);
@@ -169,12 +194,15 @@ async function updateStatistics() {
   try {
     const response = await sendMessage({ action: 'getWindowStats' });
     if (!response.success) return;
-    
+
     const windowStats = response.windowStats;
     const totalTabs = windowStats.reduce((sum, stat) => sum + stat.tabCount, 0);
     const totalWindows = windowStats.length;
-    const excessTabWindows = windowStats.filter(stat => stat.tabCount > currentConfig.tabLimit).length;
-    const averageTabs = totalWindows > 0 ? Math.round(totalTabs / totalWindows) : 0;
+    const excessTabWindows = windowStats.filter(
+      (stat) => stat.tabCount > currentConfig.tabLimit,
+    ).length;
+    const averageTabs =
+      totalWindows > 0 ? Math.round(totalTabs / totalWindows) : 0;
     const isOverWindowLimit = totalWindows > currentConfig.windowLimit;
 
     const statsHTML = `
@@ -183,7 +211,9 @@ async function updateStatistics() {
         <div class="stat-label">Total Tabs</div>
       </div>
       <div class="stat-card ${isOverWindowLimit ? 'stat-warning' : ''}">
-        <div class="stat-value">${totalWindows}/${currentConfig.windowLimit}</div>
+        <div class="stat-value">${totalWindows}/${
+      currentConfig.windowLimit
+    }</div>
         <div class="stat-label">Windows</div>
       </div>
       <div class="stat-card ${excessTabWindows > 0 ? 'stat-warning' : ''}">
@@ -195,9 +225,8 @@ async function updateStatistics() {
         <div class="stat-label">Avg per Window</div>
       </div>
     `;
-    
+
     elements.statsGrid.innerHTML = statsHTML;
-    
   } catch (error) {
     console.error('Tab Monitor Popup: Error updating statistics:', error);
   }
@@ -210,41 +239,52 @@ async function updateWindowsList() {
   try {
     const response = await sendMessage({ action: 'getWindowStats' });
     if (!response.success) return;
-    
+
     const windowStats = response.windowStats;
-    
+
     if (windowStats.length === 0) {
-      elements.windowsList.innerHTML = '<div class="empty-state">No windows found</div>';
+      elements.windowsList.innerHTML =
+        '<div class="empty-state">No windows found</div>';
       return;
     }
-    
-    const windowsHTML = windowStats.map(stat => {
-      const isOverLimit = stat.tabCount > currentConfig.tabLimit;
-      const limitPercentage = Math.min((stat.tabCount / currentConfig.tabLimit) * 100, 100);
-      
-      return `
-        <div class="window-item ${isOverLimit ? 'window-over-limit' : ''} ${stat.focused ? 'window-focused' : ''}">
+
+    const windowsHTML = windowStats
+      .map((stat) => {
+        const isOverLimit = stat.tabCount > currentConfig.tabLimit;
+        const limitPercentage = Math.min(
+          (stat.tabCount / currentConfig.tabLimit) * 100,
+          100,
+        );
+
+        return `
+        <div class="window-item ${isOverLimit ? 'window-over-limit' : ''} ${
+          stat.focused ? 'window-focused' : ''
+        }">
           <div class="window-header">
             <div class="window-title">
               Window ${stat.windowId}
               ${stat.focused ? '<span class="window-badge">Active</span>' : ''}
             </div>
-            <div class="window-count ${isOverLimit ? 'count-warning' : 'count-ok'}">
+            <div class="window-count ${
+              isOverLimit ? 'count-warning' : 'count-ok'
+            }">
               ${stat.tabCount}/${currentConfig.tabLimit}
             </div>
           </div>
           <div class="window-progress">
             <div class="progress-bar">
-              <div class="progress-fill ${isOverLimit ? 'progress-over' : 'progress-ok'}" 
+              <div class="progress-fill ${
+                isOverLimit ? 'progress-over' : 'progress-ok'
+              }" 
                    style="width: ${limitPercentage}%"></div>
             </div>
           </div>
         </div>
       `;
-    }).join('');
-    
+      })
+      .join('');
+
     elements.windowsList.innerHTML = windowsHTML;
-    
   } catch (error) {
     console.error('Tab Monitor Popup: Error updating windows list:', error);
   }
@@ -257,17 +297,20 @@ async function updateActivityLog() {
   try {
     const response = await sendMessage({ action: 'getActivityLog' });
     if (!response.success) return;
-    
+
     const activityLog = response.activityLog;
-    
+
     if (activityLog.length === 0) {
-      elements.activityLog.innerHTML = '<div class="empty-state">No recent activity</div>';
+      elements.activityLog.innerHTML =
+        '<div class="empty-state">No recent activity</div>';
       return;
     }
-    
-    const logHTML = activityLog.slice(0, 10).map(entry => {
-      const iconClass = getLogIconClass(entry.type);
-      return `
+
+    const logHTML = activityLog
+      .slice(0, 10)
+      .map((entry) => {
+        const iconClass = getLogIconClass(entry.type);
+        return `
         <div class="log-entry log-${entry.type}">
           <div class="log-icon ${iconClass}"></div>
           <div class="log-content">
@@ -276,10 +319,10 @@ async function updateActivityLog() {
           </div>
         </div>
       `;
-    }).join('');
-    
+      })
+      .join('');
+
     elements.activityLog.innerHTML = logHTML;
-    
   } catch (error) {
     console.error('Tab Monitor Popup: Error updating activity log:', error);
   }
@@ -290,11 +333,16 @@ async function updateActivityLog() {
  */
 function getLogIconClass(type) {
   switch (type) {
-    case 'info': return 'icon-info';
-    case 'warning': return 'icon-warning';
-    case 'error': return 'icon-error';
-    case 'action': return 'icon-action';
-    default: return 'icon-info';
+    case 'info':
+      return 'icon-info';
+    case 'warning':
+      return 'icon-warning';
+    case 'error':
+      return 'icon-error';
+    case 'action':
+      return 'icon-action';
+    default:
+      return 'icon-info';
   }
 }
 
@@ -304,23 +352,24 @@ function getLogIconClass(type) {
 async function onEnabledToggleChange() {
   const wasEnabled = currentConfig.enabled;
   currentConfig.enabled = elements.enabledToggle.checked;
-  
+
   // Update UI immediately
   updateConfigUI();
   updateStatusIndicator();
-  
+
   // Save configuration
   try {
     await saveCurrentConfig();
-    
-    const message = currentConfig.enabled ? 'Tab monitoring enabled' : 'Tab monitoring disabled';
+
+    const message = currentConfig.enabled
+      ? 'Tab monitoring enabled'
+      : 'Tab monitoring disabled';
     showNotification(message, 'success');
-    
+
     // Update display if enabled
     if (currentConfig.enabled) {
       await updateDisplay();
     }
-    
   } catch (error) {
     // Revert on error
     currentConfig.enabled = wasEnabled;
@@ -341,13 +390,20 @@ function onConfigChange() {
   currentConfig.autoClose = elements.autoCloseToggle.checked;
   currentConfig.autoCloseWindows = elements.autoCloseWindowsToggle.checked;
   currentConfig.notifications = elements.notificationsToggle.checked;
-  currentConfig.pauseBetweenClosures = parseInt(elements.pauseBetweenClosures.value) || 1000;
-  currentConfig.windowGracePeriod = parseInt(elements.windowGracePeriod.value) || 10000;
+  currentConfig.pauseBetweenClosures =
+    parseInt(elements.pauseBetweenClosures.value) || 1000;
+  currentConfig.windowGracePeriod =
+    parseInt(elements.windowGracePeriod.value) || 10000;
 
   // Update dependent UI elements
-  elements.notificationsToggle.disabled = !currentConfig.enabled || (!currentConfig.autoClose && !currentConfig.autoCloseWindows);
-  elements.pauseBetweenClosures.disabled = !currentConfig.enabled || (!currentConfig.autoClose && !currentConfig.autoCloseWindows);
-  elements.windowGracePeriod.disabled = !currentConfig.enabled || !currentConfig.autoCloseWindows;
+  elements.notificationsToggle.disabled =
+    !currentConfig.enabled ||
+    (!currentConfig.autoClose && !currentConfig.autoCloseWindows);
+  elements.pauseBetweenClosures.disabled =
+    !currentConfig.enabled ||
+    (!currentConfig.autoClose && !currentConfig.autoCloseWindows);
+  elements.windowGracePeriod.disabled =
+    !currentConfig.enabled || !currentConfig.autoCloseWindows;
 }
 
 /**
@@ -357,21 +413,20 @@ async function onSaveConfig() {
   const button = elements.saveConfigBtn;
   const textSpan = button.querySelector('.btn-text');
   const loadingSpan = button.querySelector('.btn-loading');
-  
+
   try {
     // Show loading state
     textSpan.style.display = 'none';
     loadingSpan.style.display = 'inline';
     button.disabled = true;
-    
+
     // Save configuration
     await saveCurrentConfig();
-    
+
     showNotification('Configuration saved successfully', 'success');
-    
+
     // Refresh display
     await updateDisplay();
-    
   } catch (error) {
     console.error('Tab Monitor Popup: Error saving configuration:', error);
     showNotification('Failed to save configuration', 'error');
@@ -390,23 +445,22 @@ async function onForceCheck() {
   const button = elements.forceCheckBtn;
   const textSpan = button.querySelector('.btn-text');
   const loadingSpan = button.querySelector('.btn-loading');
-  
+
   try {
     // Show loading state
     textSpan.style.display = 'none';
     loadingSpan.style.display = 'inline';
     button.disabled = true;
-    
+
     // Trigger force check
     const response = await sendMessage({ action: 'forceCheck' });
-    
+
     if (response.success) {
       showNotification('Manual verification completed', 'success');
       await updateDisplay();
     } else {
       showNotification('Force check failed', 'error');
     }
-    
   } catch (error) {
     console.error('Tab Monitor Popup: Error during force check:', error);
     showNotification('Force check failed', 'error');
@@ -440,11 +494,11 @@ async function onClearLog() {
  * Save current configuration to storage
  */
 async function saveCurrentConfig() {
-  const response = await sendMessage({ 
-    action: 'saveConfig', 
-    config: currentConfig 
+  const response = await sendMessage({
+    action: 'saveConfig',
+    config: currentConfig,
   });
-  
+
   if (!response.success) {
     throw new Error('Failed to save configuration');
   }
@@ -458,7 +512,7 @@ function startRealTimeUpdates() {
   if (updateInterval) {
     clearInterval(updateInterval);
   }
-  
+
   // Update every 2 seconds
   updateInterval = setInterval(async () => {
     if (!isLoading && currentConfig.enabled) {
@@ -492,17 +546,17 @@ function showNotification(message, type = 'info') {
   const notification = elements.notification;
   const messageSpan = notification.querySelector('.notification-message');
   const iconSpan = notification.querySelector('.notification-icon');
-  
+
   // Set message and type
   messageSpan.textContent = message;
   notification.className = `notification notification-${type}`;
-  
+
   // Set appropriate icon
   iconSpan.className = `notification-icon icon-${type}`;
-  
+
   // Show notification
   notification.classList.add('notification-show');
-  
+
   // Auto-hide after 3 seconds
   setTimeout(() => {
     notification.classList.remove('notification-show');
@@ -516,7 +570,10 @@ function sendMessage(message) {
   return new Promise((resolve) => {
     chrome.runtime.sendMessage(message, (response) => {
       if (chrome.runtime.lastError) {
-        console.error('Tab Monitor Popup: Message error:', chrome.runtime.lastError);
+        console.error(
+          'Tab Monitor Popup: Message error:',
+          chrome.runtime.lastError,
+        );
         resolve({ success: false, error: chrome.runtime.lastError.message });
       } else {
         resolve(response || { success: false, error: 'No response' });

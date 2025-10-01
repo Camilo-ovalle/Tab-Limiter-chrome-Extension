@@ -11,6 +11,7 @@ const DEFAULT_CONFIG = {
   windowGracePeriod: 10000, // 10 seconds grace period for new windows before auto-close
   notifications: true,
   pauseBetweenClosures: 1000, // 1 second pause between tab closures
+  adminRole: false, // Controls visibility of configuration and activity sections
 };
 
 // Activity log for recent events
