@@ -1,6 +1,6 @@
 # Chrome Tab Monitor Extension
 
-A powerful Chrome extension that monitors and controls both the number of tabs per window AND the total number of browser windows, with intelligent automatic closing, real-time statistics, and a professional popup interface.
+A powerful Chrome extension that monitors and controls both the number of tabs per window AND the total number of browser windows, with intelligent automatic closing, real-time statistics, role-based access control, and a professional popup interface.
 
 ## Features
 
@@ -8,10 +8,11 @@ A powerful Chrome extension that monitors and controls both the number of tabs p
 - **Dual monitoring system** - Tracks both tab creation/deletion and window creation/removal
 - **Configurable tab limits** - Set custom limits per window (default: 5 tabs)
 - **Configurable window limits** - Set maximum number of browser windows (default: 3 windows)
-- **Automatic tab closing** - Intelligently closes excess tabs when limits are exceeded
+- **Automatic tab closing** - Intelligently closes newly created tabs when limits are exceeded
 - **Automatic window closing** - Closes excess windows with grace period system
-- **Smart closing logic** - Never closes active/focused windows or pinned tabs, closes newest first
-- **Grace period system** - New windows get protected time (default: 10 seconds) before auto-close
+- **Smart closing logic** - Closes the most recently created tab first, protecting existing tabs with user data. Never closes pinned tabs or focused windows
+- **Grace period system** - New windows get protected time (default: 20 seconds) before auto-close
+- **Role-based access** - Admin role controls visibility of configuration and management features
 - **Native Chrome APIs** - Uses chrome.tabs, chrome.windows, chrome.storage, chrome.notifications
 
 ### User Interface
