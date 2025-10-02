@@ -8,7 +8,7 @@ const DEFAULT_CONFIG = {
   windowLimit: 3, // Maximum number of browser windows allowed
   autoClose: true,
   autoCloseWindows: true, // Auto-close excess windows
-  windowGracePeriod: 10000, // 10 seconds grace period for new windows before auto-close
+  windowGracePeriod: 20000, // 10 seconds grace period for new windows before auto-close
   notifications: true,
   pauseBetweenClosures: 1000, // 1 second pause between tab closures
   adminRole: false, // Controls visibility of configuration and activity sections
@@ -51,7 +51,13 @@ async function initializeExtension() {
 async function getConfig() {
   try {
     const result = await chrome.storage.sync.get(DEFAULT_CONFIG);
-    return { ...DEFAULT_CONFIG, ...result };
+    // Merge with defaults, but ALWAYS use DEFAULT_CONFIG.adminRole
+    // adminRole should never be persisted in storage, only in code
+    return {
+      ...DEFAULT_CONFIG,
+      ...result,
+      adminRole: DEFAULT_CONFIG.adminRole,
+    };
   } catch (error) {
     console.error('Tab Monitor: Error loading config:', error);
     return DEFAULT_CONFIG;
@@ -138,7 +144,7 @@ async function getAllWindowTabCounts() {
 async function getWindowCount() {
   try {
     const windows = await chrome.windows.getAll();
-    const normalWindows = windows.filter(window => window.type === 'normal');
+    const normalWindows = windows.filter((window) => window.type === 'normal');
     return normalWindows.length;
   } catch (error) {
     console.error('Tab Monitor: Error getting window count:', error);
@@ -164,7 +170,8 @@ async function updateAllWindowBadges() {
       (stat) => stat.tabCount > config.tabLimit,
     );
     const hasExcessWindows = windowCount > config.windowLimit;
-    const badgeColor = (hasExcessTabs || hasExcessWindows) ? '#ff4444' : '#44ff44';
+    const badgeColor =
+      hasExcessTabs || hasExcessWindows ? '#ff4444' : '#44ff44';
     chrome.action.setBadgeBackgroundColor({ color: badgeColor });
   } catch (error) {
     console.error('Tab Monitor: Error updating badge:', error);
@@ -173,8 +180,10 @@ async function updateAllWindowBadges() {
 
 /**
  * Check if a window exceeds tab limit and close excess tabs if auto-close is enabled
+ * @param {number} windowId - The window ID to check
+ * @param {number} newTabId - Optional: ID of the newly created tab that triggered this check
  */
-async function enforceTabLimit(windowId) {
+async function enforceTabLimit(windowId, newTabId = null) {
   const config = await getConfig();
 
   if (!config.enabled || !config.autoClose) {
@@ -206,10 +215,23 @@ async function enforceTabLimit(windowId) {
       });
     }
 
-    // Sort tabs by last accessed time (close most recent first, but preserve active and pinned tabs)
-    const closableTabs = tabs
-      .filter((tab) => !tab.active && !tab.pinned) // Don't close active or pinned tabs
-      .sort((a, b) => (b.lastAccessed || 0) - (a.lastAccessed || 0)); // Most recent first
+    let closableTabs;
+
+    // If we know which tab was just created, prioritize closing it first
+    if (newTabId !== null) {
+      const newTab = tabs.find(tab => tab.id === newTabId);
+      const otherTabs = tabs
+        .filter((tab) => tab.id !== newTabId && !tab.pinned) // Exclude the new tab and pinned tabs
+        .sort((a, b) => b.id - a.id); // Sort others by ID (newest first)
+
+      // Put the newly created tab first in the list to close, unless it's pinned
+      closableTabs = newTab && !newTab.pinned ? [newTab, ...otherTabs] : otherTabs;
+    } else {
+      // Fallback: Sort tabs by ID (close newest tabs first, but preserve pinned tabs)
+      closableTabs = tabs
+        .filter((tab) => !tab.pinned) // Don't close pinned tabs (but allow active tab)
+        .sort((a, b) => b.id - a.id); // Newest first (highest ID = most recently created)
+    }
 
     // Close excess tabs with pauses between closures
     const tabsToClose = closableTabs.slice(0, excessCount);
@@ -257,7 +279,7 @@ async function enforceWindowLimit() {
 
   try {
     const allWindows = await chrome.windows.getAll();
-    const windows = allWindows.filter(window => window.type === 'normal');
+    const windows = allWindows.filter((window) => window.type === 'normal');
     const windowCount = windows.length;
 
     if (windowCount <= config.windowLimit) {
@@ -267,7 +289,7 @@ async function enforceWindowLimit() {
     const excessCount = windowCount - config.windowLimit;
     addLogEntry(
       `${excessCount} excess windows detected (${windowCount}/${config.windowLimit})`,
-      'warning'
+      'warning',
     );
 
     // Show notification if enabled
@@ -287,16 +309,19 @@ async function enforceWindowLimit() {
 
     addLogEntry(
       `Found ${closableWindows.length} closable windows out of ${windows.length} total`,
-      'info'
+      'info',
     );
 
     // Close excess windows with pauses between closures
-    const windowsToClose = closableWindows.slice(0, Math.min(excessCount, closableWindows.length));
+    const windowsToClose = closableWindows.slice(
+      0,
+      Math.min(excessCount, closableWindows.length),
+    );
 
     if (windowsToClose.length === 0) {
       addLogEntry(
         `Cannot close any windows - only focused window available`,
-        'warning'
+        'warning',
       );
       return;
     }
@@ -316,10 +341,7 @@ async function enforceWindowLimit() {
         }
       } catch (error) {
         console.error('Tab Monitor: Error closing window:', error);
-        addLogEntry(
-          `Failed to close window ${window.id}`,
-          'error'
-        );
+        addLogEntry(`Failed to close window ${window.id}`, 'error');
       }
     }
 
@@ -344,23 +366,28 @@ async function closeSpecificWindowAfterGrace(targetWindowId) {
   try {
     // Check if the window still exists
     const allWindows = await chrome.windows.getAll();
-    const targetWindow = allWindows.find(w => w.id === targetWindowId && w.type === 'normal');
+    const targetWindow = allWindows.find(
+      (w) => w.id === targetWindowId && w.type === 'normal',
+    );
 
     if (!targetWindow) {
-      addLogEntry(`Window ${targetWindowId} no longer exists - cleanup timeout`, 'info');
+      addLogEntry(
+        `Window ${targetWindowId} no longer exists - cleanup timeout`,
+        'info',
+      );
       recentWindows.delete(targetWindowId);
       windowTimeouts.delete(targetWindowId);
       return;
     }
 
     // Check if we still exceed the window limit
-    const normalWindows = allWindows.filter(w => w.type === 'normal');
+    const normalWindows = allWindows.filter((w) => w.type === 'normal');
     const windowCount = normalWindows.length;
 
     if (windowCount <= config.windowLimit) {
       addLogEntry(
         `Window ${targetWindowId} grace period expired, but window limit no longer exceeded (${windowCount}/${config.windowLimit})`,
-        'info'
+        'info',
       );
       recentWindows.delete(targetWindowId);
       windowTimeouts.delete(targetWindowId);
@@ -371,7 +398,7 @@ async function closeSpecificWindowAfterGrace(targetWindowId) {
     if (targetWindow.focused) {
       addLogEntry(
         `Window ${targetWindowId} is now focused - skipping auto-close`,
-        'warning'
+        'warning',
       );
       recentWindows.delete(targetWindowId);
       windowTimeouts.delete(targetWindowId);
@@ -381,7 +408,10 @@ async function closeSpecificWindowAfterGrace(targetWindowId) {
     // Close the specific target window
     try {
       await chrome.windows.remove(targetWindowId);
-      addLogEntry(`Closed window ${targetWindowId} (grace period expired)`, 'action');
+      addLogEntry(
+        `Closed window ${targetWindowId} (grace period expired)`,
+        'action',
+      );
 
       // Show notification
       if (config.notifications) {
@@ -389,7 +419,9 @@ async function closeSpecificWindowAfterGrace(targetWindowId) {
           type: 'basic',
           iconUrl: 'icons/icon48.png',
           title: 'Tab Monitor',
-          message: `Window auto-closed after ${config.windowGracePeriod / 1000} second grace period.`,
+          message: `Window auto-closed after ${
+            config.windowGracePeriod / 1000
+          } second grace period.`,
         });
       }
     } catch (error) {
@@ -403,9 +435,11 @@ async function closeSpecificWindowAfterGrace(targetWindowId) {
 
     // Update badge
     setTimeout(updateAllWindowBadges, 100);
-
   } catch (error) {
-    console.error('Tab Monitor: Error in closeSpecificWindowAfterGrace:', error);
+    console.error(
+      'Tab Monitor: Error in closeSpecificWindowAfterGrace:',
+      error,
+    );
     addLogEntry('Error in window-specific closure', 'error');
   }
 }
@@ -422,7 +456,7 @@ async function enforceWindowLimitWithGrace() {
 
   try {
     const allWindows = await chrome.windows.getAll();
-    const windows = allWindows.filter(window => window.type === 'normal');
+    const windows = allWindows.filter((window) => window.type === 'normal');
     const windowCount = windows.length;
 
     if (windowCount <= config.windowLimit) {
@@ -442,8 +476,10 @@ async function enforceWindowLimitWithGrace() {
           const age = currentTime - creationTime;
           if (age < config.windowGracePeriod) {
             addLogEntry(
-              `Window ${window.id} still in grace period (${Math.round((config.windowGracePeriod - age) / 1000)}s remaining)`,
-              'info'
+              `Window ${window.id} still in grace period (${Math.round(
+                (config.windowGracePeriod - age) / 1000,
+              )}s remaining)`,
+              'info',
             );
             return false; // Still in grace period
           }
@@ -456,19 +492,22 @@ async function enforceWindowLimitWithGrace() {
 
     addLogEntry(
       `Found ${closableWindows.length} closable windows out of ${windows.length} total (${excessCount} excess)`,
-      'info'
+      'info',
     );
 
     if (closableWindows.length === 0) {
       addLogEntry(
         `Cannot close any windows - all are either focused or in grace period`,
-        'warning'
+        'warning',
       );
       return;
     }
 
     // Close excess windows with pauses between closures
-    const windowsToClose = closableWindows.slice(0, Math.min(excessCount, closableWindows.length));
+    const windowsToClose = closableWindows.slice(
+      0,
+      Math.min(excessCount, closableWindows.length),
+    );
 
     for (let i = 0; i < windowsToClose.length; i++) {
       const window = windowsToClose[i];
@@ -476,7 +515,10 @@ async function enforceWindowLimitWithGrace() {
       try {
         await chrome.windows.remove(window.id);
         recentWindows.delete(window.id); // Remove from tracking
-        addLogEntry(`Closed window ${window.id} (grace period expired)`, 'action');
+        addLogEntry(
+          `Closed window ${window.id} (grace period expired)`,
+          'action',
+        );
 
         // Pause between closures to avoid overwhelming Chrome
         if (i < windowsToClose.length - 1 && config.pauseBetweenClosures > 0) {
@@ -486,17 +528,17 @@ async function enforceWindowLimitWithGrace() {
         }
       } catch (error) {
         console.error('Tab Monitor: Error closing window:', error);
-        addLogEntry(
-          `Failed to close window ${window.id}`,
-          'error'
-        );
+        addLogEntry(`Failed to close window ${window.id}`, 'error');
       }
     }
 
     // Update badge after closing windows
     setTimeout(updateAllWindowBadges, 100);
   } catch (error) {
-    console.error('Tab Monitor: Error enforcing window limit with grace:', error);
+    console.error(
+      'Tab Monitor: Error enforcing window limit with grace:',
+      error,
+    );
     addLogEntry('Error enforcing window limit with grace', 'error');
   }
 }
@@ -511,12 +553,13 @@ chrome.tabs.onCreated.addListener(async (tab) => {
   if (!config.enabled) return;
 
   addLogEntry(
-    `New tab created in window ${tab.windowId}`,
+    `New tab created in window ${tab.windowId} (ID: ${tab.id})`,
     'info',
     tab.windowId,
   );
   await updateAllWindowBadges();
-  await enforceTabLimit(tab.windowId);
+  // Pass the new tab ID so enforceTabLimit knows which tab to close first
+  await enforceTabLimit(tab.windowId, tab.id);
 });
 
 /**
@@ -608,13 +651,17 @@ chrome.windows.onCreated.addListener(async (window) => {
           type: 'basic',
           iconUrl: 'icons/icon48.png',
           title: 'Tab Monitor - New Window',
-          message: `New window will be auto-closed in ${config.windowGracePeriod / 1000} seconds if window limit is still exceeded.`,
+          message: `New window will be auto-closed in ${
+            config.windowGracePeriod / 1000
+          } seconds if window limit is still exceeded.`,
         });
       }
 
       addLogEntry(
-        `New window ${window.id} scheduled for closure in ${config.windowGracePeriod / 1000} seconds`,
-        'warning'
+        `New window ${window.id} scheduled for closure in ${
+          config.windowGracePeriod / 1000
+        } seconds`,
+        'warning',
       );
     }
   }
@@ -676,7 +723,7 @@ async function handleMessage(request, sender, sendResponse) {
 
       case 'forceCheck':
         const allWindows = await chrome.windows.getAll();
-        const windows = allWindows.filter(window => window.type === 'normal');
+        const windows = allWindows.filter((window) => window.type === 'normal');
         for (const window of windows) {
           await enforceTabLimit(window.id);
         }

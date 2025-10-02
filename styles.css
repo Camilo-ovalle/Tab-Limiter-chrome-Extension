@@ -354,6 +354,14 @@ section h2 {
 }
 
 /* Windows section */
+.windows-section {
+  background: var(--surface);
+}
+
+.windows-section h2 {
+  color: var(--text-primary);
+}
+
 .windows-list {
   display: flex;
   flex-direction: column;

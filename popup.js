@@ -494,9 +494,12 @@ async function onClearLog() {
  * Save current configuration to storage
  */
 async function saveCurrentConfig() {
+  // Create a copy of config WITHOUT adminRole (should never be saved from popup)
+  const { adminRole, ...configToSave } = currentConfig;
+
   const response = await sendMessage({
     action: 'saveConfig',
-    config: currentConfig,
+    config: configToSave,
   });
 
   if (!response.success) {
