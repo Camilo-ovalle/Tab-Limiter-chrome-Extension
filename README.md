@@ -230,11 +230,34 @@ export const DEFAULT_CONFIG = {
 };
 ```
 
-### Customizing Warning Page
+### Customizing Countdown Duration
+The countdown timer shown in the warning page is controlled by the `windowGracePeriod` setting:
+
+**Option 1: Change via Popup (User-friendly)**
+1. Open the extension popup
+2. Find "New window grace period" setting
+3. Adjust the value (in milliseconds)
+4. Click "Save Configuration"
+
+**Option 2: Change Default in Code**
+```javascript
+// In utils/config.js
+export const DEFAULT_CONFIG = {
+  windowGracePeriod: 10000, // 10 seconds (value in milliseconds)
+};
+```
+
+**How it works:**
+- Value is in **milliseconds** (1000ms = 1 second)
+- Default: 5000ms (5 seconds)
+- The warning page fetches this value and converts it to seconds for display
+- Change takes effect immediately for new windows
+
+### Customizing Warning Page Appearance
 Edit `window-limit-warning.html` to change:
-- Colors and gradients
-- Countdown duration display
-- Button text
+- Colors and gradients (CSS in `<style>` section)
+- Warning message text
+- Button text ("Close Window Now")
 - Icon or animations
 
 ### Changing Update Intervals
