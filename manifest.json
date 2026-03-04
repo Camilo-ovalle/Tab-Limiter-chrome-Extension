@@ -7,10 +7,8 @@
     "tabs",
     "storage",
     "notifications",
-    "activeTab",
     "windows"
   ],
-  "host_permissions": ["*://*/*"],
   "background": {
     "service_worker": "background.js",
     "type": "module"

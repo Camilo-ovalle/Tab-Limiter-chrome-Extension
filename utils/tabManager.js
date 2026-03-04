@@ -7,7 +7,7 @@ import { addLogEntry } from './logging.js';
 /**
  * Get current tab count for a specific window
  */
-export async function getTabCount(windowId) {
+async function getTabCount(windowId) {
   try {
     const tabs = await chrome.tabs.query({ windowId: windowId });
     return tabs.length;
@@ -49,8 +49,8 @@ export async function getAllWindowTabCounts() {
  * @param {number} windowId - The window ID to check
  * @param {number} newTabId - Optional: ID of the newly created tab that triggered this check
  */
-export async function enforceTabLimit(windowId, newTabId = null) {
-  const config = await getConfig();
+export async function enforceTabLimit(windowId, newTabId = null, config = null) {
+  if (!config) config = await getConfig();
 
   if (!config.enabled || !config.autoClose) {
     return;

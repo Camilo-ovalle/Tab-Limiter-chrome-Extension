@@ -2,12 +2,12 @@
 import { getAllWindowTabCounts } from './tabManager.js';
 import { getConfig } from './config.js';
 
-export async function updateAllWindowBadges() {
+export async function updateAllWindowBadges(config = null) {
   try {
     const windowStats = await getAllWindowTabCounts();
     const totalTabs = windowStats.reduce((sum, stat) => sum + stat.tabCount, 0);
     const windowCount = windowStats.length;
-    const config = await getConfig();
+    if (!config) config = await getConfig();
 
     chrome.action.setBadgeText({ text: totalTabs.toString() });
 

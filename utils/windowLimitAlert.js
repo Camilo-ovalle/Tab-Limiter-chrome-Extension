@@ -9,8 +9,8 @@ import { getWindowCount } from './windowManager.js';
  * Show warning page in a specific window
  * @param {number} windowId - The window ID to show the warning in
  */
-export async function showWindowLimitAlertAndClose(windowId) {
-  const config = await getConfig();
+export async function showWindowLimitAlertAndClose(windowId, config = null) {
+  if (!config) config = await getConfig();
 
   if (!config.enabled || !config.autoCloseWindows) {
     return;
@@ -74,21 +74,14 @@ export async function showWindowLimitAlertAndClose(windowId) {
 /**
  * Handle the user's response to the window limit alert
  * @param {number} windowId - The window ID to close
- * @param {boolean} confirmed - Whether the user confirmed the closure
  */
-export async function handleWindowCloseConfirmation(windowId, confirmed) {
+export async function handleWindowCloseConfirmation(windowId) {
   try {
-    // Always close the window when the alert is dismissed (OK or Cancel both close it)
-    // This ensures the user is aware and the window is removed
-    const window = await chrome.windows.get(windowId);
-
-    if (window) {
-      await chrome.windows.remove(windowId);
-      addLogEntry(
-        `Window ${windowId} closed after user acknowledgment`,
-        'action',
-      );
-    }
+    await chrome.windows.remove(windowId);
+    addLogEntry(
+      `Window ${windowId} closed after user acknowledgment`,
+      'action',
+    );
   } catch (error) {
     // Window might already be closed
     console.error('Tab Monitor: Error closing window after confirmation:', error);

@@ -19,7 +19,7 @@ async function initializeExtension() {
     return;
   }
 
-  await updateAllWindowBadges();
+  await updateAllWindowBadges(config);
   // Note: Window limits are NOT enforced on initialization to avoid surprising users.
   // They're only enforced when users actively create new windows or use Force Verification.
   addLogEntry('Extension initialized', 'info');
@@ -35,8 +35,8 @@ chrome.tabs.onCreated.addListener(async (tab) => {
     'info',
     tab.windowId,
   );
-  await updateAllWindowBadges();
-  await enforceTabLimit(tab.windowId, tab.id); // Pass tab.id to prioritize closing it first
+  await updateAllWindowBadges(config);
+  await enforceTabLimit(tab.windowId, tab.id, config);
 });
 
 chrome.tabs.onRemoved.addListener(async (tabId, removeInfo) => {
@@ -48,7 +48,7 @@ chrome.tabs.onRemoved.addListener(async (tabId, removeInfo) => {
     'info',
     removeInfo.windowId,
   );
-  await updateAllWindowBadges();
+  await updateAllWindowBadges(config);
 });
 
 chrome.tabs.onAttached.addListener(async (tabId, attachInfo) => {
@@ -60,8 +60,8 @@ chrome.tabs.onAttached.addListener(async (tabId, attachInfo) => {
     'info',
     attachInfo.newWindowId,
   );
-  await updateAllWindowBadges();
-  await enforceTabLimit(attachInfo.newWindowId);
+  await updateAllWindowBadges(config);
+  await enforceTabLimit(attachInfo.newWindowId, null, config);
 });
 
 chrome.tabs.onDetached.addListener(async (tabId, detachInfo) => {
@@ -73,7 +73,7 @@ chrome.tabs.onDetached.addListener(async (tabId, detachInfo) => {
     'info',
     detachInfo.oldWindowId,
   );
-  await updateAllWindowBadges();
+  await updateAllWindowBadges(config);
 });
 
 // Window event listeners
@@ -83,7 +83,7 @@ chrome.windows.onFocusChanged.addListener(async (windowId) => {
   const config = await getConfig();
   if (!config.enabled) return;
 
-  await updateAllWindowBadges();
+  await updateAllWindowBadges(config);
 });
 
 chrome.windows.onCreated.addListener(async (window) => {
@@ -92,13 +92,17 @@ chrome.windows.onCreated.addListener(async (window) => {
 
   if (window.type === 'normal') {
     addLogEntry(`New window created (ID: ${window.id})`, 'info');
-    await updateAllWindowBadges();
+    await updateAllWindowBadges(config);
 
     const windowCount = await getWindowCount();
     if (windowCount > config.windowLimit && config.autoCloseWindows) {
       // 500ms delay ensures window and tabs are ready before showing warning page
       setTimeout(async () => {
-        await showWindowLimitAlertAndClose(window.id);
+        try {
+          await showWindowLimitAlertAndClose(window.id, config);
+        } catch (error) {
+          console.error('Tab Monitor: Error showing window limit alert:', error);
+        }
       }, 500);
 
       addLogEntry(
@@ -114,7 +118,7 @@ chrome.windows.onRemoved.addListener(async (windowId) => {
   if (!config.enabled) return;
 
   addLogEntry(`Window removed (ID: ${windowId})`, 'info');
-  await updateAllWindowBadges();
+  await updateAllWindowBadges(config);
 });
 
 // Message handling for popup communication

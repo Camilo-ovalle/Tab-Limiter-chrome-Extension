@@ -127,6 +127,7 @@ function updateConfigUI() {
   elements.autoCloseWindowsToggle.checked = currentConfig.autoCloseWindows;
   elements.notificationsToggle.checked = currentConfig.notifications;
   elements.pauseBetweenClosures.value = currentConfig.pauseBetweenClosures;
+  elements.windowGracePeriod.value = currentConfig.windowGracePeriod;
 
   // Enable/disable controls based on enabled state
   const isEnabled = currentConfig.enabled;
@@ -176,10 +177,12 @@ function updateStatusIndicator() {
  */
 async function updateDisplay() {
   try {
-    // Update statistics and windows list
+    const response = await sendMessage({ action: 'getWindowStats' });
+    const windowStats = response.success ? response.windowStats : [];
+
     await Promise.all([
-      updateStatistics(),
-      updateWindowsList(),
+      updateStatistics(windowStats),
+      updateWindowsList(windowStats),
       updateActivityLog(),
     ]);
   } catch (error) {
@@ -190,12 +193,8 @@ async function updateDisplay() {
 /**
  * Update statistics section
  */
-async function updateStatistics() {
+async function updateStatistics(windowStats) {
   try {
-    const response = await sendMessage({ action: 'getWindowStats' });
-    if (!response.success) return;
-
-    const windowStats = response.windowStats;
     const totalTabs = windowStats.reduce((sum, stat) => sum + stat.tabCount, 0);
     const totalWindows = windowStats.length;
     const excessTabWindows = windowStats.filter(
@@ -235,13 +234,8 @@ async function updateStatistics() {
 /**
  * Update windows list section
  */
-async function updateWindowsList() {
+async function updateWindowsList(windowStats) {
   try {
-    const response = await sendMessage({ action: 'getWindowStats' });
-    if (!response.success) return;
-
-    const windowStats = response.windowStats;
-
     if (windowStats.length === 0) {
       elements.windowsList.innerHTML =
         '<div class="empty-state">No windows found</div>';
@@ -385,7 +379,7 @@ async function onEnabledToggleChange() {
  */
 function onConfigChange() {
   // Update current configuration with UI values
-  currentConfig.tabLimit = parseInt(elements.tabLimit.value) || 10;
+  currentConfig.tabLimit = parseInt(elements.tabLimit.value) || 5;
   currentConfig.windowLimit = parseInt(elements.windowLimit.value) || 3;
   currentConfig.autoClose = elements.autoCloseToggle.checked;
   currentConfig.autoCloseWindows = elements.autoCloseWindowsToggle.checked;
@@ -407,31 +401,19 @@ function onConfigChange() {
 }
 
 /**
- * Handle save configuration button click
+ * Run an async action with button loading state
  */
-async function onSaveConfig() {
-  const button = elements.saveConfigBtn;
+async function withButtonLoading(button, action) {
   const textSpan = button.querySelector('.btn-text');
   const loadingSpan = button.querySelector('.btn-loading');
 
+  textSpan.style.display = 'none';
+  loadingSpan.style.display = 'inline';
+  button.disabled = true;
+
   try {
-    // Show loading state
-    textSpan.style.display = 'none';
-    loadingSpan.style.display = 'inline';
-    button.disabled = true;
-
-    // Save configuration
-    await saveCurrentConfig();
-
-    showNotification('Configuration saved successfully', 'success');
-
-    // Refresh display
-    await updateDisplay();
-  } catch (error) {
-    console.error('Tab Monitor Popup: Error saving configuration:', error);
-    showNotification('Failed to save configuration', 'error');
+    await action();
   } finally {
-    // Reset button state
     textSpan.style.display = 'inline';
     loadingSpan.style.display = 'none';
     button.disabled = false;
@@ -439,37 +421,40 @@ async function onSaveConfig() {
 }
 
 /**
+ * Handle save configuration button click
+ */
+async function onSaveConfig() {
+  await withButtonLoading(elements.saveConfigBtn, async () => {
+    try {
+      await saveCurrentConfig();
+      showNotification('Configuration saved successfully', 'success');
+      await updateDisplay();
+    } catch (error) {
+      console.error('Tab Monitor Popup: Error saving configuration:', error);
+      showNotification('Failed to save configuration', 'error');
+    }
+  });
+}
+
+/**
  * Handle force check button click
  */
 async function onForceCheck() {
-  const button = elements.forceCheckBtn;
-  const textSpan = button.querySelector('.btn-text');
-  const loadingSpan = button.querySelector('.btn-loading');
+  await withButtonLoading(elements.forceCheckBtn, async () => {
+    try {
+      const response = await sendMessage({ action: 'forceCheck' });
 
-  try {
-    // Show loading state
-    textSpan.style.display = 'none';
-    loadingSpan.style.display = 'inline';
-    button.disabled = true;
-
-    // Trigger force check
-    const response = await sendMessage({ action: 'forceCheck' });
-
-    if (response.success) {
-      showNotification('Manual verification completed', 'success');
-      await updateDisplay();
-    } else {
+      if (response.success) {
+        showNotification('Manual verification completed', 'success');
+        await updateDisplay();
+      } else {
+        showNotification('Force check failed', 'error');
+      }
+    } catch (error) {
+      console.error('Tab Monitor Popup: Error during force check:', error);
       showNotification('Force check failed', 'error');
     }
-  } catch (error) {
-    console.error('Tab Monitor Popup: Error during force check:', error);
-    showNotification('Force check failed', 'error');
-  } finally {
-    // Reset button state
-    textSpan.style.display = 'inline';
-    loadingSpan.style.display = 'none';
-    button.disabled = false;
-  }
+  });
 }
 
 /**

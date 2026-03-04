@@ -53,7 +53,7 @@ export async function handleMessage(request, sender, sendResponse) {
         break;
 
       case 'closeWindowConfirmed':
-        await handleWindowCloseConfirmation(request.windowId, request.confirmed);
+        await handleWindowCloseConfirmation(request.windowId);
         await updateAllWindowBadges();
         sendResponse({ success: true });
         break;

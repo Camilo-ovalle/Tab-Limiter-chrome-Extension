@@ -69,9 +69,4 @@
     }
   });
 
-  // Prevent user from navigating away
-  window.addEventListener('beforeunload', (e) => {
-    // Let the window close naturally, don't prevent it
-    return;
-  });
 })();

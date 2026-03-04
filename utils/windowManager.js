@@ -23,8 +23,8 @@ export async function getWindowCount() {
  * Check if window count exceeds limit and close excess windows if auto-close is enabled
  * Note: This is used for Force Verification. New windows use alert-based closing.
  */
-export async function enforceWindowLimit() {
-  const config = await getConfig();
+export async function enforceWindowLimit(config = null) {
+  if (!config) config = await getConfig();
 
   if (!config.enabled || !config.autoCloseWindows) {
     return;
@@ -65,10 +65,7 @@ export async function enforceWindowLimit() {
     }
 
     // Close excess windows with pauses between closures
-    const windowsToClose = closableWindows.slice(
-      0,
-      Math.min(excessCount, closableWindows.length),
-    );
+    const windowsToClose = closableWindows.slice(0, excessCount);
 
     // Show notification if enabled
     if (config.notifications && windowsToClose.length > 0) {
