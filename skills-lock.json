@@ -1,10 +1,34 @@
 {
   "version": 1,
   "skills": {
+    "chrome-extension-ui": {
+      "source": "pproenca/dot-skills",
+      "sourceType": "github",
+      "skillPath": "skills/.experimental/chrome-extension-ui/SKILL.md",
+      "computedHash": "8d488f726ba6a96fb4e7b1265ad1b73507293dd6979114b326ccd4872a26cd43"
+    },
+    "frontend-design": {
+      "source": "anthropics/skills",
+      "sourceType": "github",
+      "skillPath": "skills/frontend-design/SKILL.md",
+      "computedHash": "063a0e6448123cd359ad0044cc46b0e490cc7964d45ef4bb9fd842bd2ffbca67"
+    },
     "javascript-pro": {
       "source": "jeffallan/claude-skills",
       "sourceType": "github",
       "computedHash": "bb68df06fc25aef2e79dc9ef09e4d611e4c2080fd505a6b57ee559d17cefdc74"
+    },
+    "tailwindcss-animations": {
+      "source": "josiahsiegel/claude-plugin-marketplace",
+      "sourceType": "github",
+      "skillPath": "plugins/tailwindcss-master/skills/tailwindcss-animations/SKILL.md",
+      "computedHash": "eff5b75d37872c9e20001ec9c168688f88f8faac969af4df4e250fb7c8a71628"
+    },
+    "ui-design": {
+      "source": "shajith003/awesome-claude-skills",
+      "sourceType": "github",
+      "skillPath": "ui-design/SKILL.md",
+      "computedHash": "841ae21b87a7e12a46fe036051a6d94447fc41f6cf520872736c40870c61cc6c"
     }
   }
 }

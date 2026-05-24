@@ -22,15 +22,20 @@ export function ConfigInput({
   onChange,
 }: ConfigInputProps) {
   const isDisabled = isManaged || disabled;
+  const isOn = value as boolean;
 
   return (
-    <div className="flex items-center justify-between py-2.5 border-b border-slate-700/50 last:border-0">
+    <div className="flex items-center justify-between py-2.5 border-b border-[var(--bg-300)]/60 last:border-0">
       <div className="flex items-center gap-2">
-        <span className="text-sm text-slate-300">{label}</span>
+        <span
+          className={`text-xs text-[var(--text-100)] transition-opacity ${isDisabled ? "opacity-40" : ""}`}
+        >
+          {label}
+        </span>
         {isManaged && (
           <span
             title="Managed by your organization (GPO)"
-            className="text-[10px] text-slate-500 font-semibold border border-slate-600 rounded px-1 py-px tracking-wide"
+            className="text-[8px] text-[var(--text-200)] font-semibold border border-[var(--bg-300)] rounded px-1 py-px tracking-[0.08em] uppercase"
           >
             GPO
           </span>
@@ -38,13 +43,25 @@ export function ConfigInput({
       </div>
 
       {type === "checkbox" ? (
-        <input
-          type="checkbox"
-          checked={value as boolean}
+        /* Custom toggle switch */
+        <button
+          role="switch"
+          aria-checked={isOn}
+          aria-disabled={isDisabled}
           disabled={isDisabled}
-          onChange={(e) => onChange(e.target.checked)}
-          className="w-4 h-4 accent-blue-500 disabled:opacity-40 cursor-pointer disabled:cursor-not-allowed"
-        />
+          onClick={() => !isDisabled && onChange(!isOn)}
+          className={`relative w-9 h-5 rounded-full border transition-all duration-200 flex-shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary-100)] focus-visible:ring-offset-1 ${
+            isOn && !isDisabled
+              ? "bg-[var(--primary-200)] border-[var(--primary-200)]"
+              : "bg-[var(--bg-200)] border-[var(--bg-300)]"
+          } ${isDisabled ? "opacity-40 cursor-not-allowed" : "cursor-pointer"}`}
+        >
+          <span
+            className={`absolute top-[3px] w-[14px] h-[14px] rounded-full bg-white shadow-sm transition-all duration-200 ${
+              isOn ? "left-[18px]" : "left-[3px]"
+            }`}
+          />
+        </button>
       ) : (
         <div className="flex items-center gap-1.5">
           <input
@@ -54,10 +71,10 @@ export function ConfigInput({
             min={min}
             max={max}
             onChange={(e) => onChange(Number(e.target.value))}
-            className="w-14 py-1 px-2 text-center text-sm rounded-lg bg-slate-900 border border-slate-700 text-white disabled:opacity-40 disabled:cursor-not-allowed focus:outline-none focus:border-blue-500 transition-colors"
+            className="w-14 py-1 px-2 text-center text-xs font-['JetBrains_Mono',monospace] rounded-md bg-[var(--bg-100)] border border-[var(--bg-300)] text-[var(--text-100)] disabled:opacity-40 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary-100)] focus-visible:border-[var(--primary-200)] transition-colors"
           />
           {unit && (
-            <span className="text-xs text-slate-500 w-4">{unit}</span>
+            <span className="text-[10px] text-[var(--text-200)] opacity-60 w-4">{unit}</span>
           )}
         </div>
       )}

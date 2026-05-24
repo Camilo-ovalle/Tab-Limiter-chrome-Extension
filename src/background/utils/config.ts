@@ -15,13 +15,15 @@ export const DEFAULT_CONFIG: ExtensionConfig = {
 
 export async function getConfig(): Promise<ExtensionConfig> {
   try {
-    const result = await chrome.storage.sync.get(
-      DEFAULT_CONFIG as unknown as Record<string, unknown>,
-    );
-    // adminRole is always from DEFAULT_CONFIG, never persisted
+    const [syncResult, managedResult] = await Promise.all([
+      chrome.storage.sync.get(DEFAULT_CONFIG as unknown as Record<string, unknown>),
+      chrome.storage.managed.get(null),
+    ]);
+    // GPO (managed) wins over local, adminRole is never persisted
     return {
       ...DEFAULT_CONFIG,
-      ...(result as Partial<ExtensionConfig>),
+      ...(syncResult as Partial<ExtensionConfig>),
+      ...(managedResult as Partial<ExtensionConfig>),
       adminRole: DEFAULT_CONFIG.adminRole,
     };
   } catch (error) {

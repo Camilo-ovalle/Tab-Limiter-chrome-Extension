@@ -19,7 +19,12 @@ Chrome Tab Monitor does **not** collect any data. Specifically:
 
 ## Data Storage
 
-All extension data (your configuration preferences and activity logs) is stored **locally on your device** using the Chrome Storage API. This data never leaves your browser and is not accessible to anyone other than you.
+All extension data is stored **locally on your device** and never leaves your browser:
+
+- **Chrome Storage API (`chrome.storage.local`)** — Stores your configuration preferences (tab limits, window limits, auto-close settings) and the activity log.
+- **Browser local storage (`localStorage`)** — Stores a single UI preference: your chosen color theme (`light` or `dark`). This value is scoped to the extension popup and is not accessible by any website or external service.
+
+No data is accessible to anyone other than you (or, in managed environments, your IT administrator — see below).
 
 ## Permissions Used
 
@@ -29,6 +34,15 @@ The extension requires the following permissions, used exclusively for its core 
 - **windows** — To count open browser windows and close excess windows when your configured limits are exceeded.
 - **storage** — To save your configuration preferences (tab limits, window limits, auto-close settings) locally on your device.
 - **notifications** — To optionally notify you when tab or window limits are exceeded and tabs or windows are auto-closed.
+
+## Enterprise / Managed Environments
+
+Chrome Tab Monitor supports Chrome Enterprise policy management (Group Policy Objects — GPO). If your organization deploys this extension through Chrome Enterprise, your IT administrator may pre-configure certain settings (such as tab limits, window limits, and auto-close behavior) using the Chrome Managed Storage API (`chrome.storage.managed`).
+
+In this scenario:
+- The extension **reads** policy values set by your administrator; it does **not** send any data back to your organization or any external server.
+- Settings pushed via GPO appear as locked fields (marked **GPO**) in the extension popup and cannot be changed by the end user.
+- No personal browsing data is shared with your organization through this mechanism.
 
 ## Third-Party Services
 
