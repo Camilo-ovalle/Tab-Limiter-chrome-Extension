@@ -1,0 +1,38 @@
+name: Despliegue Continuo (CD)
+
+on:
+  push:
+    tags:
+      - 'v*' # Se dispara al subir tags que inicien con 'v', ej: v1.0.0
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Descargar Código
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+
+      - name: Instalar Dependencias
+        run: npm ci
+
+      - name: Compilar Extensión
+        run: npm run build
+
+      - name: Crear Archivo ZIP
+        run: |
+          cd dist
+          zip -r ../chrome-tab-monitor-${{ github.ref_name }}.zip .
+          cd ..
+
+      - name: Crear GitHub Release y Adjuntar ZIP
+        uses: softprops/action-gh-release@v2
+        with:
+          files: chrome-tab-monitor-${{ github.ref_name }}.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

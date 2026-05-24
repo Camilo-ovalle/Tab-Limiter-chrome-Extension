@@ -1,0 +1,94 @@
+import type { ExtensionConfig } from "../../shared/types";
+import { getConfig } from "./config";
+import { addLogEntry } from "./logging";
+import { updateAllWindowBadges } from "./badge";
+
+export async function getWindowCount(): Promise<number> {
+  try {
+    const windows = await chrome.windows.getAll();
+    const normalWindows = windows.filter((window) => window.type === "normal");
+    return normalWindows.length;
+  } catch (error) {
+    console.error("Tab Monitor: Error getting window count:", error);
+    return 0;
+  }
+}
+
+// Used by Force Verification. New windows use alert-based closing via windowLimitAlert.
+export async function enforceWindowLimit(
+  config: ExtensionConfig | null = null,
+): Promise<void> {
+  if (!config) config = await getConfig();
+
+  if (!config.enabled || !config.autoCloseWindows) {
+    return;
+  }
+
+  try {
+    const allWindows = await chrome.windows.getAll();
+    const windows = allWindows.filter((window) => window.type === "normal");
+    const windowCount = windows.length;
+
+    if (windowCount <= config.windowLimit) {
+      return;
+    }
+
+    const excessCount = windowCount - config.windowLimit;
+
+    addLogEntry(
+      `${excessCount} excess windows detected (${windowCount}/${config.windowLimit})`,
+      "warning",
+    );
+
+    const closableWindows = windows
+      .filter((window) => !window.focused)
+      .sort((a, b) => (b.id ?? 0) - (a.id ?? 0));
+
+    addLogEntry(
+      `Found ${closableWindows.length} closable windows out of ${windows.length} total`,
+      "info",
+    );
+
+    if (closableWindows.length === 0) {
+      addLogEntry(
+        `Cannot close any windows - only focused window available`,
+        "warning",
+      );
+      return;
+    }
+
+    const windowsToClose = closableWindows.slice(0, excessCount);
+
+    if (config.notifications && windowsToClose.length > 0) {
+      chrome.notifications.create({
+        type: "basic",
+        iconUrl: "icons/icon48.png",
+        title: "Tab Monitor",
+        message: `Closing ${windowsToClose.length} excess window(s)...`,
+      });
+    }
+
+    for (let i = 0; i < windowsToClose.length; i++) {
+      const window = windowsToClose[i];
+
+      try {
+        await chrome.windows.remove(window.id!);
+        addLogEntry(`Closed window ${window.id}`, "action");
+
+        if (i < windowsToClose.length - 1 && config!.pauseBetweenClosures > 0) {
+          await new Promise((resolve) =>
+            setTimeout(resolve, config!.pauseBetweenClosures),
+          );
+        }
+      } catch (error) {
+        console.error("Tab Monitor: Error closing window:", error);
+        addLogEntry(`Failed to close window ${window.id}`, "error");
+      }
+    }
+
+    setTimeout(() => updateAllWindowBadges(), 100);
+  } catch (error) {
+    console.error("Tab Monitor: Error enforcing window limit:", error);
+    addLogEntry("Error enforcing window limit", "error");
+  }
+}

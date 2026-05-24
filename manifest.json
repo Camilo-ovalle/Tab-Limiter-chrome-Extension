@@ -3,18 +3,16 @@
   "name": "Chrome Tab Monitor",
   "version": "1.1.0",
   "description": "Monitor and control the number of tabs per window with automatic closing and real-time statistics",
-  "permissions": [
-    "tabs",
-    "storage",
-    "notifications",
-    "windows"
-  ],
+  "permissions": ["tabs", "storage", "notifications", "windows"],
+  "storage": {
+    "managed_schema": "schema.json"
+  },
   "background": {
-    "service_worker": "background.js",
+    "service_worker": "src/background/index.ts",
     "type": "module"
   },
   "action": {
-    "default_popup": "popup.html",
+    "default_popup": "src/popup/index.html",
     "default_title": "Tab Monitor",
     "default_icon": {
       "16": "icons/icon16.png",

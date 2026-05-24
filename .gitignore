@@ -145,3 +145,8 @@ CLAUDE.md
 .CLAUDE
 .agents
 .claude
+
+node_modules/
+dist/
+.env
+.antigravitycli

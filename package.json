@@ -1,0 +1,44 @@
+{
+  "name": "tab-limiter-chrome-extension",
+  "version": "2.0.0",
+  "description": "A powerful Chrome extension that monitors and controls both the number of tabs per window AND the total number of browser windows, with intelligent automatic closing, real-time statistics, role-based access control, and a professional popup interface.",
+  "main": "background.js",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "lint": "eslint src",
+    "format": "prettier --write \"src/**/*.{ts,tsx,css,json}\"",
+    "format:check": "prettier --check \"src/**/*.{ts,tsx,css,json}\""
+  },
+  "keywords": [],
+  "author": "Camilo Ovalle",
+  "license": "MIT",
+  "devDependencies": {
+    "@crxjs/vite-plugin": "^2.4.0",
+    "@eslint/js": "^9.39.4",
+    "@tailwindcss/vite": "^4.3.0",
+    "@testing-library/react": "^16.3.2",
+    "@types/chrome": "^0.1.42",
+    "@types/react": "^19.2.15",
+    "@types/react-dom": "^19.2.3",
+    "autoprefixer": "^10.5.0",
+    "eslint": "^9.39.4",
+    "eslint-config-prettier": "^10.1.8",
+    "jsdom": "^28.1.0",
+    "postcss": "^8.5.15",
+    "prettier": "^3.8.3",
+    "react": "^19.2.6",
+    "react-dom": "^19.2.6",
+    "tailwindcss": "^4.3.0",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.59.4",
+    "vite": "^8.0.14",
+    "vitest": "^4.1.7"
+  },
+  "dependencies": {
+    "@vitejs/plugin-react": "^6.0.2"
+  }
+}

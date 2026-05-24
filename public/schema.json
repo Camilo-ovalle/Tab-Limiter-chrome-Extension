@@ -1,0 +1,30 @@
+{
+  "$schema": "http://json-schema.org/draft-03/schema#",
+  "type": "object",
+  "properties": {
+    "enabled": {
+      "type": "boolean",
+      "description": "Habilita o deshabilita el monitoreo global de pestañas y ventanas."
+    },
+    "tabLimit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100,
+      "description": "Límite máximo de pestañas permitidas por ventana."
+    },
+    "windowLimit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 10,
+      "description": "Límite máximo de ventanas de navegador permitidas simultáneamente."
+    },
+    "autoClose": {
+      "type": "boolean",
+      "description": "Habilita el cierre automático de pestañas excedentes."
+    },
+    "autoCloseWindows": {
+      "type": "boolean",
+      "description": "Habilita el cierre automático de ventanas excedentes."
+    }
+  }
+}

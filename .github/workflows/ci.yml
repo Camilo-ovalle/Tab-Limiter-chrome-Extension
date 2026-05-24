@@ -1,0 +1,36 @@
+name: Integración Continua (CI)
+
+on:
+  push:
+    branches: [main, development]
+  pull_request:
+    branches: [main, development]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Descargar Código
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+
+      - name: Instalar Dependencias
+        run: npm ci
+
+      - name: Validar Formato (Prettier)
+        run: npm run format:check
+
+      - name: Validar Código (ESLint)
+        run: npm run lint
+
+      - name: Ejecutar Pruebas (Vitest)
+        run: npm run test
+
+      - name: Compilar Extensión (Build)
+        run: npm run build
