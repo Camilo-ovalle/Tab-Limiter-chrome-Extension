@@ -6,17 +6,17 @@ interface ActivityLogProps {
 }
 
 const dotColor: Record<ActivityLogEntry["type"], string> = {
-  info:    "bg-[var(--accent-100)]",
+  info: "bg-[var(--accent-100)]",
   warning: "bg-amber-400",
-  error:   "bg-red-500",
-  action:  "bg-[var(--primary-200)]",
+  error: "bg-red-500",
+  action: "bg-[var(--primary-200)]",
 };
 
 const msgColor: Record<ActivityLogEntry["type"], string> = {
-  info:    "text-[var(--text-100)]",
+  info: "text-[var(--text-100)]",
   warning: "text-amber-600",
-  error:   "text-red-500",
-  action:  "text-[var(--primary-100)]",
+  error: "text-red-500",
+  action: "text-[var(--primary-100)]",
 };
 
 export function ActivityLog({ entries, onClear }: ActivityLogProps) {
@@ -48,8 +48,13 @@ export function ActivityLog({ entries, onClear }: ActivityLogProps) {
           </p>
         ) : (
           entries.slice(0, 10).map((entry, i) => (
-            <div key={i} className="flex items-start gap-3 px-4 py-2.5 hover:bg-[var(--bg-300)]/20 transition-colors duration-100">
-              <span className={`mt-[5px] w-1.5 h-1.5 rounded-full flex-shrink-0 ${dotColor[entry.type]}`} />
+            <div
+              key={i}
+              className="flex items-start gap-3 px-4 py-2.5 hover:bg-[var(--bg-300)]/20 transition-colors duration-100"
+            >
+              <span
+                className={`mt-[5px] w-1.5 h-1.5 rounded-full flex-shrink-0 ${dotColor[entry.type]}`}
+              />
               <div className="min-w-0">
                 <p className={`text-xs leading-snug ${msgColor[entry.type]}`}>
                   {entry.message}

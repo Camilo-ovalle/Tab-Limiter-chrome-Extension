@@ -45,14 +45,79 @@ export function ConfigPanel({
       </div>
 
       <div className="px-4">
-        <ConfigInput label="Enable monitoring" value={config.enabled} type="checkbox" isManaged={m("enabled")} onChange={(v) => onEnabledChange(v as boolean)} />
-        <ConfigInput label="Tab limit per window" value={config.tabLimit} type="number" isManaged={m("tabLimit")} disabled={!config.enabled} min={1} max={100} onChange={(v) => onChange("tabLimit", v as number)} />
-        <ConfigInput label="Window limit" value={config.windowLimit} type="number" isManaged={m("windowLimit")} disabled={!config.enabled} min={1} max={10} onChange={(v) => onChange("windowLimit", v as number)} />
-        <ConfigInput label="Auto-close excess tabs" value={config.autoClose} type="checkbox" isManaged={m("autoClose")} disabled={!config.enabled} onChange={(v) => onChange("autoClose", v as boolean)} />
-        <ConfigInput label="Auto-close excess windows" value={config.autoCloseWindows} type="checkbox" isManaged={m("autoCloseWindows")} disabled={!config.enabled} onChange={(v) => onChange("autoCloseWindows", v as boolean)} />
-        <ConfigInput label="Notifications" value={config.notifications} type="checkbox" isManaged={m("notifications")} disabled={notificationsDisabled} onChange={(v) => onChange("notifications", v as boolean)} />
-        <ConfigInput label="Pause between closures" value={Math.round(config.pauseBetweenClosures / 1000)} type="number" unit="s" isManaged={m("pauseBetweenClosures")} disabled={pauseDisabled} min={0} onChange={(v) => onChange("pauseBetweenClosures", (v as number) * 1000)} />
-        <ConfigInput label="Window grace period" value={Math.round(config.windowGracePeriod / 1000)} type="number" unit="s" isManaged={m("windowGracePeriod")} disabled={graceDisabled} min={1} onChange={(v) => onChange("windowGracePeriod", (v as number) * 1000)} />
+        <ConfigInput
+          label="Enable monitoring"
+          value={config.enabled}
+          type="checkbox"
+          isManaged={m("enabled")}
+          onChange={(v) => onEnabledChange(v as boolean)}
+        />
+        <ConfigInput
+          label="Tab limit per window"
+          value={config.tabLimit}
+          type="number"
+          isManaged={m("tabLimit")}
+          disabled={!config.enabled}
+          min={1}
+          max={100}
+          onChange={(v) => onChange("tabLimit", v as number)}
+        />
+        <ConfigInput
+          label="Window limit"
+          value={config.windowLimit}
+          type="number"
+          isManaged={m("windowLimit")}
+          disabled={!config.enabled}
+          min={1}
+          max={10}
+          onChange={(v) => onChange("windowLimit", v as number)}
+        />
+        <ConfigInput
+          label="Auto-close excess tabs"
+          value={config.autoClose}
+          type="checkbox"
+          isManaged={m("autoClose")}
+          disabled={!config.enabled}
+          onChange={(v) => onChange("autoClose", v as boolean)}
+        />
+        <ConfigInput
+          label="Auto-close excess windows"
+          value={config.autoCloseWindows}
+          type="checkbox"
+          isManaged={m("autoCloseWindows")}
+          disabled={!config.enabled}
+          onChange={(v) => onChange("autoCloseWindows", v as boolean)}
+        />
+        <ConfigInput
+          label="Notifications"
+          value={config.notifications}
+          type="checkbox"
+          isManaged={m("notifications")}
+          disabled={notificationsDisabled}
+          onChange={(v) => onChange("notifications", v as boolean)}
+        />
+        <ConfigInput
+          label="Pause between closures"
+          value={Math.round(config.pauseBetweenClosures / 1000)}
+          type="number"
+          unit="s"
+          isManaged={m("pauseBetweenClosures")}
+          disabled={pauseDisabled}
+          min={0}
+          onChange={(v) =>
+            onChange("pauseBetweenClosures", (v as number) * 1000)
+          }
+        />
+        <ConfigInput
+          label="Window grace period"
+          value={Math.round(config.windowGracePeriod / 1000)}
+          type="number"
+          unit="s"
+          isManaged={m("windowGracePeriod")}
+          disabled={graceDisabled}
+          min={1}
+          onChange={(v) => onChange("windowGracePeriod", (v as number) * 1000)}
+        />
       </div>
 
       <div className="px-4 py-3 border-t border-[var(--bg-300)] flex gap-2">

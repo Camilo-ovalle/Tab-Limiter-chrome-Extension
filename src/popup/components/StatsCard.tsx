@@ -5,7 +5,12 @@ interface StatsCardProps {
   isWarning?: boolean;
 }
 
-export function StatsCard({ value, label, sub, isWarning = false }: StatsCardProps) {
+export function StatsCard({
+  value,
+  label,
+  sub,
+  isWarning = false,
+}: StatsCardProps) {
   return (
     <div
       className={`relative rounded-xl p-4 border overflow-hidden transition-all duration-200 hover:-translate-y-0.5 ${
@@ -13,7 +18,11 @@ export function StatsCard({ value, label, sub, isWarning = false }: StatsCardPro
           ? "border-red-300 bg-red-50 [data-theme=dark_&]:bg-red-950/30 [data-theme=dark_&]:border-red-800/50"
           : "border-[var(--bg-300)] bg-[var(--bg-200)]"
       }`}
-      style={{ boxShadow: isWarning ? "0 1px 3px rgba(239,68,68,0.1)" : "var(--shadow)" }}
+      style={{
+        boxShadow: isWarning
+          ? "0 1px 3px rgba(239,68,68,0.1)"
+          : "var(--shadow)",
+      }}
     >
       {/* Top accent line */}
       <div
@@ -35,7 +44,9 @@ export function StatsCard({ value, label, sub, isWarning = false }: StatsCardPro
         {label}
       </div>
       {sub && (
-        <div className="text-[9px] text-[var(--text-200)] opacity-60 mt-0.5">{sub}</div>
+        <div className="text-[9px] text-[var(--text-200)] opacity-60 mt-0.5">
+          {sub}
+        </div>
       )}
     </div>
   );

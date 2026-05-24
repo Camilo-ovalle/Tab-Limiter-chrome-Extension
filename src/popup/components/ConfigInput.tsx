@@ -74,7 +74,9 @@ export function ConfigInput({
             className="w-14 py-1 px-2 text-center text-xs font-['JetBrains_Mono',monospace] rounded-md bg-[var(--bg-100)] border border-[var(--bg-300)] text-[var(--text-100)] disabled:opacity-40 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary-100)] focus-visible:border-[var(--primary-200)] transition-colors"
           />
           {unit && (
-            <span className="text-[10px] text-[var(--text-200)] opacity-60 w-4">{unit}</span>
+            <span className="text-[10px] text-[var(--text-200)] opacity-60 w-4">
+              {unit}
+            </span>
           )}
         </div>
       )}

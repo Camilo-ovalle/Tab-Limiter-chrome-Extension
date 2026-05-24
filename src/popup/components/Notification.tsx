@@ -5,8 +5,8 @@ interface NotificationProps {
 
 const styles = {
   success: "bg-emerald-50 border-emerald-200 text-emerald-700",
-  error:   "bg-red-50 border-red-200 text-red-600",
-  info:    "bg-[var(--primary-300)] border-[var(--primary-200)] text-[var(--accent-200)]",
+  error: "bg-red-50 border-red-200 text-red-600",
+  info: "bg-[var(--primary-300)] border-[var(--primary-200)] text-[var(--accent-200)]",
 };
 
 const icons = { success: "✓", error: "✕", info: "ℹ" };

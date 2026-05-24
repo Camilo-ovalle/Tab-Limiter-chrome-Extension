@@ -11,16 +11,37 @@ type Theme = "light" | "dark";
 
 function SunIcon() {
   return (
-    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>
+    <svg
+      width="15"
+      height="15"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <circle cx="12" cy="12" r="4" />
+      <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" />
     </svg>
   );
 }
 
 function MoonIcon() {
   return (
-    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+    <svg
+      width="15"
+      height="15"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
     </svg>
   );
 }
@@ -45,7 +66,9 @@ export function App() {
   const [theme, setTheme] = useState<Theme>(() => {
     const stored = localStorage.getItem("popup-theme");
     if (stored === "light" || stored === "dark") return stored;
-    return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+    return window.matchMedia("(prefers-color-scheme: dark)").matches
+      ? "dark"
+      : "light";
   });
 
   useEffect(() => {
@@ -105,13 +128,17 @@ export function App() {
               )}
               <span
                 className={`relative inline-flex rounded-full h-2 w-2 ${
-                  config.enabled ? "bg-[var(--primary-200)]" : "bg-[var(--bg-300)]"
+                  config.enabled
+                    ? "bg-[var(--primary-200)]"
+                    : "bg-[var(--bg-300)]"
                 }`}
               />
             </span>
             <span
               className={`text-[9px] font-semibold tracking-[0.12em] uppercase ${
-                config.enabled ? "text-[var(--primary-200)]" : "text-[var(--text-200)]"
+                config.enabled
+                  ? "text-[var(--primary-200)]"
+                  : "text-[var(--text-200)]"
               }`}
             >
               {config.enabled ? "Active" : "Off"}
@@ -121,7 +148,9 @@ export function App() {
           {/* Theme toggle */}
           <button
             onClick={toggleTheme}
-            aria-label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+            aria-label={
+              theme === "dark" ? "Switch to light mode" : "Switch to dark mode"
+            }
             className="w-7 h-7 rounded-md flex items-center justify-center text-[var(--text-200)] hover:text-[var(--text-100)] hover:bg-[var(--bg-200)] border border-transparent hover:border-[var(--bg-300)] transition-all duration-150 active:scale-95"
           >
             {theme === "dark" ? <SunIcon /> : <MoonIcon />}
@@ -133,7 +162,11 @@ export function App() {
 
       {/* Stats */}
       <div className="px-5 py-4 grid grid-cols-2 gap-3">
-        <StatsCard value={totalTabs} label="Open Tabs" sub="across all windows" />
+        <StatsCard
+          value={totalTabs}
+          label="Open Tabs"
+          sub="across all windows"
+        />
         <StatsCard
           value={windowStats.length}
           label="Windows"
