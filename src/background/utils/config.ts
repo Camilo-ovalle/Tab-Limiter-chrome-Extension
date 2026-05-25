@@ -1,4 +1,4 @@
-import { ConfigState, ExtensionConfig } from '../../shared/types';
+import { ConfigState, ExtensionConfig } from "../../shared/types";
 
 // Configuration management
 export const DEFAULT_CONFIG: ExtensionConfig = {
@@ -29,7 +29,7 @@ export async function getConfig(): Promise<ExtensionConfig> {
       adminRole: DEFAULT_CONFIG.adminRole,
     };
   } catch (error) {
-    console.error('Tab Monitor: Error loading config:', error);
+    console.error("Tab Monitor: Error loading config:", error);
     return DEFAULT_CONFIG;
   }
 }
@@ -63,8 +63,8 @@ export async function saveConfig(
 ): Promise<void> {
   try {
     await chrome.storage.sync.set(config);
-    console.log('Tab Monitor: Configuration saved');
+    console.log("Tab Monitor: Configuration saved");
   } catch (error) {
-    console.error('Tab Monitor: Error saving config:', error);
+    console.error("Tab Monitor: Error saving config:", error);
   }
 }
