@@ -1,5 +1,4 @@
 @import "tailwindcss";
-@import url("https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@500;600;700&family=JetBrains+Mono:wght@400;600&display=swap");
 
 /* ─── Light theme (default) ─── */
 :root {
@@ -57,7 +56,7 @@ body {
   background-color: var(--bg-100);
   color: var(--text-100);
   font-family:
-    "Barlow",
+    "Segoe UI",
     system-ui,
     -apple-system,
     sans-serif;

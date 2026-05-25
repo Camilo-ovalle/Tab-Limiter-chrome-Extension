@@ -15,7 +15,7 @@ export function StatsCard({
     <div
       className={`relative rounded-xl p-4 border overflow-hidden transition-all duration-200 hover:-translate-y-0.5 ${
         isWarning
-          ? "border-red-300 bg-red-50 [data-theme=dark_&]:bg-red-950/30 [data-theme=dark_&]:border-red-800/50"
+          ? "border-red-500/30 bg-red-500/10"
           : "border-[var(--bg-300)] bg-[var(--bg-200)]"
       }`}
       style={{

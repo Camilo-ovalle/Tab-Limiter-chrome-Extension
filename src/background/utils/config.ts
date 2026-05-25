@@ -63,7 +63,6 @@ export async function saveConfig(
 ): Promise<void> {
   try {
     await chrome.storage.sync.set(config);
-    console.log("Tab Monitor: Configuration saved");
   } catch (error) {
     console.error("Tab Monitor: Error saving config:", error);
   }

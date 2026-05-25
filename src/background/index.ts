@@ -11,13 +11,8 @@ chrome.runtime.onStartup.addListener(initializeExtension);
 chrome.runtime.onInstalled.addListener(initializeExtension);
 
 async function initializeExtension(): Promise<void> {
-  console.log("Tab Monitor: Initializing extension...");
-
   const config = await getConfig();
-  if (!config.enabled) {
-    console.log("Tab Monitor: Extension is disabled");
-    return;
-  }
+  if (!config.enabled) return;
 
   await updateAllWindowBadges(config);
   // Window limits are NOT enforced on initialization to avoid surprising users.

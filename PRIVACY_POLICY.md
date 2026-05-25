@@ -19,34 +19,34 @@ Chrome Tab Monitor does **not** collect any data. Specifically:
 
 ## Data Storage
 
-All extension data is stored **locally on your device** and never leaves your browser:
+All extension data is stored on your device and never transmitted to any server operated by this extension:
 
-- **Chrome Storage API (`chrome.storage.local`)** — Stores your configuration preferences (tab limits, window limits, auto-close settings) and the activity log.
-- **Browser local storage (`localStorage`)** — Stores a single UI preference: your chosen color theme (`light` or `dark`). This value is scoped to the extension popup and is not accessible by any website or external service.
-
-No data is accessible to anyone other than you (or, in managed environments, your IT administrator — see below).
+- **`chrome.storage.sync`** — Stores your configuration preferences (tab limits, window limits, auto-close settings). If you have Chrome Sync enabled in your Google account, Chrome may synchronize these values across your devices through Google's infrastructure. This is controlled entirely by your Chrome Sync settings and is not initiated by this extension.
+- **`chrome.storage.managed`** — Read-only. In managed environments, your IT administrator may push policy values through this API. The extension reads these values but never writes to them.
+- **`localStorage`** — Stores a single UI preference: your chosen color theme (`light` or `dark`). This value is scoped to the extension popup and is not accessible by any website or external service.
+- **Activity log** — Stored in memory only. The log is lost when the browser service worker restarts and is never written to any persistent storage.
 
 ## Permissions Used
 
 The extension requires the following permissions, used exclusively for its core functionality:
 
-- **tabs** — To count open tabs in each window and close excess tabs when your configured limits are exceeded.
-- **windows** — To count open browser windows and close excess windows when your configured limits are exceeded.
-- **storage** — To save your configuration preferences (tab limits, window limits, auto-close settings) locally on your device.
-- **notifications** — To optionally notify you when tab or window limits are exceeded and tabs or windows are auto-closed.
+- **`tabs`** — To count open tabs in each window and close excess tabs when configured limits are exceeded.
+- **`windows`** — To count open browser windows and close excess windows when configured limits are exceeded.
+- **`storage`** — To save your configuration preferences locally and read IT administrator policies in managed environments.
+- **`notifications`** — To optionally notify you when tab or window limits are exceeded.
 
-## Enterprise / Managed Environments
+## Enterprise / Managed Environments (GPO)
 
-Chrome Tab Monitor supports Chrome Enterprise policy management (Group Policy Objects — GPO). If your organization deploys this extension through Chrome Enterprise, your IT administrator may pre-configure certain settings (such as tab limits, window limits, and auto-close behavior) using the Chrome Managed Storage API (`chrome.storage.managed`).
+Chrome Tab Monitor supports Chrome Enterprise policy management via Group Policy Objects (GPO). If your organization deploys this extension through Chrome Enterprise, your IT administrator may pre-configure certain settings using `chrome.storage.managed`.
 
 In this scenario:
-- The extension **reads** policy values set by your administrator; it does **not** send any data back to your organization or any external server.
+- The extension **reads** policy values set by your administrator. It does **not** send any data back to your organization or any external server.
 - Settings pushed via GPO appear as locked fields (marked **GPO**) in the extension popup and cannot be changed by the end user.
 - No personal browsing data is shared with your organization through this mechanism.
 
 ## Third-Party Services
 
-Chrome Tab Monitor does not use any third-party services, APIs, or SDKs.
+Chrome Tab Monitor does **not** use any third-party services, APIs, SDKs, or external network connections. No requests are made to external servers when using this extension.
 
 ## Changes to This Policy
 
