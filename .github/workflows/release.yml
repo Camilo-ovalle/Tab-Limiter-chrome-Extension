@@ -8,6 +8,10 @@ on:
 jobs:
   release:
     runs-on: ubuntu-latest
+
+    permissions:
+      contents: write # Necesario para crear GitHub Releases
+
     steps:
       - name: Descargar Código
         uses: actions/checkout@v4
@@ -20,6 +24,16 @@ jobs:
 
       - name: Instalar Dependencias
         run: npm ci
+
+      # Validaciones antes de publicar
+      - name: Verificar Tipos (TypeScript)
+        run: npm run typecheck
+
+      - name: Validar Código (ESLint)
+        run: npm run lint
+
+      - name: Ejecutar Pruebas (Vitest)
+        run: npm run test
 
       - name: Compilar Extensión
         run: npm run build
@@ -34,5 +48,14 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: chrome-tab-monitor-${{ github.ref_name }}.zip
+          generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Publicar en Chrome Web Store
+        run: npx chrome-webstore-upload-cli upload --source chrome-tab-monitor-${{ github.ref_name }}.zip --auto-publish
+        env:
+          EXTENSION_ID: ${{ secrets.CHROME_EXTENSION_ID }}
+          CLIENT_ID: ${{ secrets.CHROME_CLIENT_ID }}
+          CLIENT_SECRET: ${{ secrets.CHROME_CLIENT_SECRET }}
+          REFRESH_TOKEN: ${{ secrets.CHROME_REFRESH_TOKEN }}

@@ -2,10 +2,13 @@
   "name": "tab-limiter-chrome-extension",
   "version": "2.0.0",
   "description": "A powerful Chrome extension that monitors and controls both the number of tabs per window AND the total number of browser windows, with intelligent automatic closing, real-time statistics, role-based access control, and a professional popup interface.",
-  "main": "background.js",
   "type": "module",
+  "engines": {
+    "node": ">=22.12.0"
+  },
   "scripts": {
     "dev": "vite",
+    "typecheck": "tsc --noEmit",
     "build": "tsc && vite build",
     "preview": "vite preview",
     "test": "vitest run",

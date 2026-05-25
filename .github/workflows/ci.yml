@@ -10,6 +10,9 @@ jobs:
   validate:
     runs-on: ubuntu-latest
 
+    permissions:
+      contents: read
+
     steps:
       - name: Descargar Código
         uses: actions/checkout@v4
@@ -22,6 +25,9 @@ jobs:
 
       - name: Instalar Dependencias
         run: npm ci
+
+      - name: Verificar Tipos (TypeScript)
+        run: npm run typecheck
 
       - name: Validar Formato (Prettier)
         run: npm run format:check

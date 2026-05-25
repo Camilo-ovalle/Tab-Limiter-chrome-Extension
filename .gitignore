@@ -150,3 +150,5 @@ node_modules/
 dist/
 .env
 .antigravitycli
+PLAN.md 
+PLAN_DETALLADO.md
